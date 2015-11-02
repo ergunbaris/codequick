@@ -6,6 +6,7 @@ public class PermutationsOfAString{
     public static void main(String...args){
         // TODO check args
         Set<String> results = (new PermutationsOfAString()).createPermutations(args[0]);
+        System.out.printf("permutation count:%d%n", results.size());
         for (String str:results){
             System.out.printf("%s,",str);
         }
@@ -20,13 +21,13 @@ public class PermutationsOfAString{
     }
 
     private void createPermutations(Set<String> permSet, String str, String curStr, int index){
-        if(index == str.length()){
+        if(index == str.length()-1){
             permSet.add(curStr);
         }else{
             for(int i=0;i <= curStr.length();i++){
                 StringBuilder strBuild = new StringBuilder(curStr);
-                strBuild.insert(i,str.charAt(index));
-                createPermutations(permSet, str, strBuild.toString(), index++);
+                strBuild.insert(i,str.charAt(index+1));
+                createPermutations(permSet, str, strBuild.toString(), index+1);
             }
         }
     }
