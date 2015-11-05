@@ -1,4 +1,17 @@
 package permutation;
+/*
+* RETRORESPECTIVE:
+*       Good:
+        - Was able to discuss other algorithms and saw the possibility that there is a better algorithm
+*       Bad:
+*       - I forgot the utilization of charsets for BCR hence ı did know that approach
+        - map value must be get processed and put back to its key value 
+        - Should ask questions like shoudl whitespaces be considered loudly
+        - map size is with size() not length() I knew but writing code needs good testing by eye!
+        Keep an eye on:
+*       
+*/
+
 import java.util.*;
 
 public class CheckStringsPerms{
@@ -14,28 +27,19 @@ public class CheckStringsPerms{
         if(str1 == null || null == str2 || str1.length() != str2.length()){
             return false;
         }
-        Map<Character, Integer> str1Map = new HashMap<>();
-        Map<Character, Integer> str2Map = new HashMap<>(); 
-        // O(N) memory coud it be O(1)?
-        constructStrMap(str1Map, str1); 
-        constructStrMap(str2Map, str2);
-        if(str1Map.size() != str2Map.size()){
-            return false;
-        }
+        int [] str1CharOccurence = new int[65536];
+        int [] str2CharOccurence = new int[65536];
+        // O(1) or O(C) memory; 
+        countChars(str1CharOccurence, str1); 
+        countChars(str2CharOccurence, str2);
         // O(N) runtime
 
-        return str1Map.equals(str2Map); // O(N)
+        return Arrays.equals(str1CharOccurence,str2CharOccurence);
     }
     
-    private void constructStrMap(Map<Character,Integer> strMap, String str){
+    private void countChars(int charsCount[], String str){
         for(int i=0;i<str.length();i++){
-            char found = str.charAt(i);
-            if(strMap.containsKey(found)){
-                int occurenceCount = strMap.get(found);
-                strMap.put(found,++occurenceCount);
-            }else{
-                strMap.put(found,1);
-            }
+            charsCount[str.charAt(i)]++;
         }
     }
 
