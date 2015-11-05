@@ -1,5 +1,14 @@
 package string;
-
+/* RETRORESPECTIVE:
+*       Good:
+        - started with the best algorithm and described another complex to implement algorithm which maybe in place
+        - mentioned about StringBuilder amortised runtime on doubling array size.
+*       Bad:
+        - could mention why String not used instead O(kn^2)
+        - code reuse
+        Keep an eye on:
+*       
+*/
 public class CompressString{
     public static void main(String...args){
         // TODO test args
