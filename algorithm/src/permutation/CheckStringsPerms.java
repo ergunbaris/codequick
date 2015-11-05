@@ -19,7 +19,7 @@ public class CheckStringsPerms{
         // O(N) memory coud it be O(1)?
         constructStrMap(str1Map, str1); 
         constructStrMap(str2Map, str2);
-        if(str1Map.length() != str2Map.length()){
+        if(str1Map.size() != str2Map.size()){
             return false;
         }
         // O(N) runtime
@@ -28,9 +28,11 @@ public class CheckStringsPerms{
     }
     
     private void constructStrMap(Map<Character,Integer> strMap, String str){
-        for(char found:str){            
-            if(strMap.contains(found)){
-                strMap.get(found)++; //?
+        for(int i=0;i<str.length();i++){
+            char found = str.charAt(i);
+            if(strMap.containsKey(found)){
+                int occurenceCount = strMap.get(found);
+                strMap.put(found,++occurenceCount);
             }else{
                 strMap.put(found,1);
             }
