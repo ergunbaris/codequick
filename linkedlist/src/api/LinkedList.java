@@ -77,9 +77,13 @@ public class LinkedList<E> implements Iterable<E>{
         }
         if(curNode.prev() != null){
             curNode.prev().setNext(curNode.next());
+        }else{
+            first = curNode.next();
         }
         if(curNode.next() != null){
             curNode.next().setPrev(curNode.prev());
+        }else{
+            last = curNode.prev();
         }
         return true;
     }
@@ -148,6 +152,20 @@ public class LinkedList<E> implements Iterable<E>{
         System.out.printf("size:%d%n", list1.size());
         System.out.printf("last:%d%n", list1.getLast().getItem());
 
+        System.out.printf("deleted=%b%n",list1.remove(200));
+        System.out.printf("first:%d%n",list1.getFirst().getItem());
+        System.out.printf("size:%d%n", list1.size());
+        System.out.printf("last:%d%n", list1.getLast().getItem());
+
+        System.out.printf("deleted=%b%n",list1.remove(0));
+        System.out.printf("first:%d%n",list1.getFirst().getItem());
+        System.out.printf("size:%d%n", list1.size());
+        System.out.printf("last:%d%n", list1.getLast().getItem());
+
+        System.out.printf("deleted=%b%n",list1.remove(5));
+        System.out.printf("first:%d%n",list1.getFirst().getItem());
+        System.out.printf("size:%d%n", list1.size());
+        System.out.printf("last:%d%n", list1.getLast().getItem());
     }
     
 }
