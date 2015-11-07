@@ -41,17 +41,18 @@ public class LinkedList<E> implements Iterable<E>{
             if(index == curIndex){
                 Node<E> newNode = new Node<E>(item);
                 newNode.setNext(curNode);
+                if(curNode.prev()!=null){
+                    curNode.prev().setNext(newNode);
+                }
                 if(curNode != null){
                     newNode.setPrev(curNode.prev());
                     curNode.setPrev(newNode);
                 }
-                if(curNode.prev()!=null){
-                    curNode.prev().setNext(newNode);
-                }
-                if(curIndex == 0){
+                if(newNode.prev() == null){
                     first = newNode;
                 }
                 added = true;
+                break;
             }
         }while((curNode = curNode.next())!=null);
         if(!added){
@@ -129,17 +130,23 @@ public class LinkedList<E> implements Iterable<E>{
             list1.addFirst(i);
         }
         System.out.println(list1);
-        System.out.printf("size:%d%n",list1.size());
+        System.out.printf("first:%d%n",list1.getFirst().getItem());
+        System.out.printf("size:%d%n", list1.size());
+        System.out.printf("last:%d%n", list1.getLast().getItem());
         LinkedList<Integer> list2 = new LinkedList<>();
         for(int i=0; i<numberOfNodes;i++){
             list2.addLast(i);
         }
         System.out.println(list2);
+        System.out.printf("first:%d%n",list2.getFirst().getItem());
         System.out.printf("size:%d%n",list2.size());
+        System.out.printf("last:%d%n",list2.getLast().getItem());
         
-        list1.add(200,50);
+        list1.add(200,0);
         System.out.println(list1);
-        System.out.printf("size:%d%n",list1.size());
+        System.out.printf("first:%d%n",list1.getFirst().getItem());
+        System.out.printf("size:%d%n", list1.size());
+        System.out.printf("last:%d%n", list1.getLast().getItem());
 
     }
     
