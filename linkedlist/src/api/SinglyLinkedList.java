@@ -51,7 +51,10 @@ public class SinglyLinkedList<E>{
         
     }
 
-    public void deleteMidNode(){
+    public boolean deleteMidNode(){
+        if(null == first || first.next() == null || first.next().next() == null){
+            return false;
+        }
         Node<E> one = first;
         Node<E> two = first;
         Node<E> previous = null;
@@ -63,6 +66,7 @@ public class SinglyLinkedList<E>{
         }
         previous.setNext(one.next());
         one.setNext(null);
+        return true;
     }
 
     public String toString(){
@@ -72,6 +76,7 @@ public class SinglyLinkedList<E>{
             builder.append(curNode.getItem() + ",");
             curNode = curNode.next();
         }
+        builder.append(String.format("%s%n",curNode.getItem()));        
         return builder.toString(); 
     }
 
@@ -86,9 +91,9 @@ public class SinglyLinkedList<E>{
         int kth = Integer.parseInt(args[1]);        
         System.out.printf("%d element from the end=%d%n", kth, list1.kthElement(kth));
         
-        System.out.printf("Before delete list=%s%n", list1);
-        list1.deleteMidNode();
-        System.out.printf("After delete list=%s%n", list1);
+        System.out.printf("Before delete list=%s", list1);
+        while(list1.deleteMidNode());
+        System.out.printf("After delete list=%s", list1);
 
     }
 
