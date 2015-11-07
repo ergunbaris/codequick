@@ -100,11 +100,12 @@ public class LinkedList<E> implements Iterable<E>{
     class MyIterator<E> implements Iterator<E>{
         Node<E> curNode = (Node)LinkedList.this.first;
         public boolean hasNext(){
-            return curNode.next()!=null;
+            return curNode !=null;
         }
         public E next(){
+            Node<E> temp = curNode;
             curNode = curNode.next();
-            return curNode.getItem();
+            return temp.getItem();
         }
 
         public void remove(){
@@ -112,4 +113,34 @@ public class LinkedList<E> implements Iterable<E>{
         }
         
     }
+    public String toString(){
+        StringBuilder build = new StringBuilder();
+        for(E found:this){
+            build.append(found + ",");
+        }
+        return build.toString();
+    }
+
+    public static void main(String...args){
+        // TODO test input
+        int numberOfNodes = Integer.parseInt(args[0]);
+        LinkedList<Integer> list1 = new LinkedList<>();
+        for(int i=0; i<numberOfNodes;i++){
+            list1.addFirst(i);
+        }
+        System.out.println(list1);
+        System.out.printf("size:%d%n",list1.size());
+        LinkedList<Integer> list2 = new LinkedList<>();
+        for(int i=0; i<numberOfNodes;i++){
+            list2.addLast(i);
+        }
+        System.out.println(list2);
+        System.out.printf("size:%d%n",list2.size());
+        
+        list1.add(200,50);
+        System.out.println(list1);
+        System.out.printf("size:%d%n",list1.size());
+
+    }
+    
 }
