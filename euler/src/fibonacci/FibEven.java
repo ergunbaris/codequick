@@ -1,6 +1,11 @@
 package fibonacci;
 import java.util.*;
 
+/* Retrospective
+    Good: correct algorithm
+    Bad: OPerator precedence ignored == is considered prior to & operator.
+*/
+
 public class FibEven{
     public static void main(String...args){
         System.out.printf("sum=%d%n",new FibEven().sumFibEven());
