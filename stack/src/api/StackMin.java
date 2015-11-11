@@ -1,63 +1,36 @@
 package api;
 import java.util.NoSuchElementException;
 
-public class StackMin<E extends Comparable>{
-    private static class StackNode<E>{
-        private final E item;
-        private E previousMin;
-        private StackNode<E> next;
-        private StackNode(E item){
-            this.item = item;
-        }
-        
-    }
-    private StackNode<E> top;
-    private E curMin;
- 
+public class StackMin<E extends Comparable> extends Stack<E>{
+    Stack<E> minStack = new Stack<>();
     public StackMin(){}
     public void push(E item){
-        if(null == item){
-            throw new IllegalArgumentException("pushing null element in stack not allowed!");
+        if(minStack.isEmpty()){
+            minStack.push(item);
+        }else{
+            if(item.compareTo(minStack.peek()) <= 0){
+                minStack.push(item);
+            }
         }
-        StackNode<E> curNode = new StackNode<E>(item);
-        curNode.next = top;
-        top = curNode;
-        if(curMin == null || curMin.compareTo(item) > 0){
-            curNode.previousMin = curMin;
-            curMin = item;
-        }
+        super.push(item);
     }
     public E pop(){
-        if(null == top){
-            throw new NoSuchElementException();
+        E e = super.pop();
+        if(e.equals(minStack.peek())){
+            minStack.pop();
         }
-        StackNode<E> temp = top;
-        if(temp.previousMin != null && temp.item == curMin){
-            curMin = temp.previousMin;
-        }
-        top = top.next;
-        temp.next = null;
-        if(top == null){
-            curMin = null;
-        }
-        return temp.item;
+        return e;
     }
 
     public E peek(){
-        if(null == top){
-            throw new NoSuchElementException();
-        }
-        return top.item;
+        return super.peek();
     }
 
     public boolean isEmpty(){
-        return top == null;
+        return super.isEmpty();
     }
     
     public E min(){
-        if(isEmpty()){
-            throw new NoSuchElementException();
-        }
-        return curMin;
+        return minStack.peek();
     }
 }
