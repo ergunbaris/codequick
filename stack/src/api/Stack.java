@@ -1,7 +1,7 @@
 package api;
 import java.util.NoSuchElementException;
 
-public class Stack<E>{
+public class Stack<E> implements IStack<E>{
     private static class StackNode<E>{
         private final E item;
         private StackNode<E> next;
