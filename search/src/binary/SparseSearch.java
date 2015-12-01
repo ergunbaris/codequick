@@ -19,19 +19,8 @@ public class SparseSearch
   private int find(String [] arr, String key, int start, int end)
   {
   int mid = (end+start)/2;
-  if(start == mid)
-    {     
-    if(key.equalsIgnoreCase(arr[mid]))
-      {
-      return mid;
-      }
-    if(start == end-1)
+  if(start>mid)
     {
-    if(key.equalsIgnoreCase(arr[end]))
-      {
-      return end;
-      }               
-    }
     return -1;
     }
 
