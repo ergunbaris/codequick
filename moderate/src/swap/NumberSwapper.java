@@ -8,12 +8,20 @@ public class NumberSwapper
       System.out.println(pair);
       new NumberSwapper().swap(pair);
       System.out.println(pair);
+      new NumberSwapper().swap2(pair);
+      System.out.println(pair);
     }
   public void swap(Pair pair)
     {
     pair.a += pair.b;
     pair.b = pair.a-pair.b;
     pair.a = pair.a-pair.b;
+    }
+  public void swap2(Pair pair)
+    {
+    pair.a = pair.a ^ pair.b;
+    pair.b = pair.a ^ pair.b;
+    pair.a = pair.a ^ pair.b;
     }
   }
 class Pair
