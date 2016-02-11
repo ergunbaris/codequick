@@ -1,12 +1,21 @@
 package amicable;
 import java.util.*;
 import prime.Eratosthenes;
+import prime.Divisors;
 
 public class Numbers
   {
+  private final Divisors divisors;
   public static void main (String ... args)
     {
-    System.out.println(new Numbers().sumOfAmicableNumbers(10_000));
+    int limit = Integer.parseInt(args[0]);
+    Divisors divisors = new Divisors(limit);
+    System.out.println(new Numbers(divisors).sumOfAmicableNumbers(limit));
+    }
+
+  public Numbers(Divisors divisors)
+    {
+    this.divisors = divisors;
     }
 
   public int sumOfAmicableNumbers(int limit)
@@ -41,77 +50,16 @@ public class Numbers
       }
     else
       {
-      Map<Integer, Integer> primeDivisorsUnderSqrt = getPrimeDivisorsUnderSqrt(number, primes);
-      sumOfAllDivisors = findSumOfAllDivisors(number, primeDivisorsUnderSqrt);
+      Set<Integer> divs = divisors.findAllDivisors(number);
+      sumOfAllDivisors = findSumOfAllDivisors(divs);
       sumOfMultiplesMap.put(number, sumOfAllDivisors);
       }
     return sumOfAllDivisors;
     }
-  private Map<Integer, Integer> getPrimeDivisorsUnderSqrt (int number, List<Integer> primes)
+  private int findSumOfAllDivisors(Set<Integer> divs)
     {
-    Map<Integer, Integer> primeDivisorsUnderSqrt = new LinkedHashMap<>();
-    int primeIndex = 0;
-    int result = number;
-    while (result != 1 && primes.get(primeIndex) <= (int)Math.sqrt(number))
-      {
-      int prime = primes.get(primeIndex);
-      if (result % prime == 0)
-        {
-        if(primeDivisorsUnderSqrt.containsKey(prime))
-          {
-          primeDivisorsUnderSqrt.put(prime, primeDivisorsUnderSqrt.get(prime) + 1);
-          }
-        else
-          {
-          primeDivisorsUnderSqrt.put(prime, 1);
-          }
-        result /= prime; 
-        }
-      else
-        {
-        primeIndex++;
-        }
-      }
-    return primeDivisorsUnderSqrt;
-    }
-  private int findSumOfAllDivisors(int number, Map<Integer, Integer> primeDivisorsUnderSqrt)
-    {
-    int sqrtNumber = (int)Math.sqrt(number);
-    Set<Integer> divisors = new TreeSet<>();
-    divisors.add(1);
-    for (Map.Entry<Integer, Integer> entry: primeDivisorsUnderSqrt.entrySet())
-      {
-      Set<Integer> newDivisors = new HashSet<>();
-      int prime = entry.getKey();
-      int pow = entry.getValue();
-      for (int divisor:divisors)
-        {
-        for (int i = 0;i < pow; i++)
-          {
-          int newDivisor = divisor*(int)Math.pow(prime, i+1);
-          if (newDivisor <= sqrtNumber)
-            {
-            newDivisors.add(newDivisor);
-            }
-          else
-            {
-            break;
-            }
-          }
-        }
-      divisors.addAll(newDivisors);
-      }
-    Set<Integer> biggerDivisors = new HashSet<>();
-    for(int divisor:divisors)
-      {
-      if (divisor != 1)
-        {
-        biggerDivisors.add(number/divisor);
-        }
-      }
-    divisors.addAll(biggerDivisors);
     int sum = 0;
-    for(int divisor:divisors)
+    for(int divisor:divs)
       {
       sum += divisor;
       }
