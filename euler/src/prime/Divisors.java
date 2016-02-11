@@ -19,6 +19,16 @@ public class Divisors
     {
     primes = new Eratosthenes().getListOfPrimesUnder((int)Math.sqrt(maxLimit)+100);
     }
+  public int findSumOfAllDivisors(int number)
+    {
+    int sum = 0;
+    Set<Integer> divs = findAllDivisors(number);
+    for(int divisor:divs)
+      {
+      sum += divisor;
+      }
+    return sum;
+    }
   public Set<Integer> findAllDivisors(int number)
     {
     Map<Integer, Integer> primeDivisorsUnderSqrt = getPrimeDivisorsUnderSqrt(number);
