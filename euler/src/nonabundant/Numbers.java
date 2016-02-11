@@ -9,6 +9,10 @@ public class Numbers
   public static void main(String...args)
     {
     int limit = 28_111;
+    if (args.length > 0)
+      {
+      limit = Integer.parseInt(args[0]);
+      }
     int smallestAbundant = 12;
     Numbers nums = new Numbers(new Divisors(limit));
     System.out.println( nums.findSumOfNumbersCantBeExpressedAsSumOfAbundant(limit + smallestAbundant));
