@@ -16,8 +16,11 @@ public class Permutations
       throw new IllegalArgumentException("permutation order cannot be smalle than 1");
       }
     Character [] digits = {'0', '1', '2', '3', '4', '5', '6', '7', '8', '9'};
+    long start = System.nanoTime();
     long perm = new Permutations().findNthLexicographicPermutation(nth, digits);
-    System.out.println(perm);
+    long end = System.nanoTime();
+    long inMs = (end - start)/1000L;
+    System.out.printf("result=%d in %d ms%n",perm, inMs);
     }
   public long findNthLexicographicPermutation(long n, Character [] digits)
     {
