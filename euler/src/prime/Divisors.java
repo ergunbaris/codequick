@@ -68,13 +68,21 @@ public class Divisors
     divisors.addAll(biggerDivisors);
     return divisors;
     }
-  private Map<Integer, Integer> getPrimeDivisorsUnderSqrt (int number)
+  public Map<Integer, Integer> getPrimeDivisorsUnderSqrt (int number)
+    {
+    return getPrimeDivisorsUnderSqrt (number, true);
+    }
+  private Map<Integer, Integer> getPrimeDivisorsUnderSqrt (int number, boolean underSqrt)
     {
     Map<Integer, Integer> primeDivisorsUnderSqrt = new LinkedHashMap<>();
     int primeIndex = 0;
     int result = number;
-    while (result != 1 && primes.get(primeIndex) <= (int)Math.sqrt(number))
+    while (result != 1)
       {
+      if (underSqrt && primes.get(primeIndex) > (int)Math.sqrt(number))
+        {
+        break;
+        }
       int prime = primes.get(primeIndex);
       if (result % prime == 0)
         {
@@ -94,5 +102,9 @@ public class Divisors
         }
       }
     return primeDivisorsUnderSqrt;
+    }
+  public Map<Integer, Integer> getPrimeDivisors (int number)
+    {
+    return getPrimeDivisorsUnderSqrt (number, false);
     }
   }
