@@ -3,33 +3,60 @@ import java.util.*;
 
 public class Cycles
   {
-  private final List<Integer> [] reciprocalLists;
-  private int maxCycleIndex = 0;
+  private final LinkedList<Integer> [] reciprocalLists;
+  private int maxCycleIndex = 1;
   public static void main (String ... args)
     {
-    
+    int max = Integer.parseInt(args[0]);
+    System.out.println(new Cycles(max).getMaximumReciprocalNumber());
     }
   public Cycles(int max)
     {
-    reciprocalLists = new List[max];
-    for (int i = 0; i < max; i++)
-      {
-      reciprocalLists[i] = new LinkedList<>();
-      }
+    reciprocalLists = new LinkedList[max];
+    findCycles(reciprocalLists);
     }
-  private void findCycles(List<Integer> [] reciprocalLists)
+  public int getMaximumReciprocalNumber()
+    {
+    return maxCycleIndex;
+    }
+  private void findCycles(LinkedList<Integer> [] reciprocalLists)
     {
     int maxCycleCnt = 0;
-    for (int i = 2; i < reciprocalLists.length; i++)
+    for (int i = 1; i < reciprocalLists.length; i++)
       {
-      int [] remainders = {-1,0,-1,-1,-1,-1,-1,-1,-1,-1};
+      int [] remainders = new int[reciprocalLists.length];
       int numerator = 1;
-      int d = i;
       int remainder = 0;
-      while ((remainder = ((numerator*10)%d)) != 0)
+      int result = 0;
+      int index = 1;
+      while ((remainder = ((numerator*10)%i)) != 0)
         {
-        remainder = ((numerator*10)/d);
-        
+        if (remainders[remainder] != 0)
+          {
+          int cycleCount = reciprocalLists[i].size() - remainders[remainder] + 1;
+          if (maxCycleCnt < cycleCount)
+            {
+            maxCycleCnt = cycleCount;
+            this.maxCycleIndex = i;
+            }
+          break;
+          }
+        else
+          {
+          remainders[remainder] = index;
+          index++;
+          }
+        result = ((numerator*10)/i);
+        if (reciprocalLists[i] == null)
+          {
+          reciprocalLists[i] = new LinkedList<>();
+          }
+        reciprocalLists[i].addLast(result);
+        numerator = remainder;
+        }
+      if (remainder == 0)
+        {
+        reciprocalLists[i] = null;
         }
       }
     }
