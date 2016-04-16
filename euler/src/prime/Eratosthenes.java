@@ -1,7 +1,7 @@
 package prime;
 
 import java.util.List;
-import java.util.LinkedList;
+import java.util.ArrayList;
 
 /*
 Retrospective: WALK THROUGH YOUR CODE CAREFULLY
@@ -22,7 +22,7 @@ public class Eratosthenes
   }
   public List<Integer> getListOfPrimesUnder(int n)
     {
-    List<Integer> primes = new LinkedList<>();
+    List<Integer> primes = new ArrayList<>();
     boolean [] nonprimes = new boolean[n+1];
     int prime = 2;
     primes.add(prime);
