@@ -6,13 +6,13 @@ import java.util.HashSet;
 public class QuadraticPrimes
   {
   
-  private static final int EXPECTED_ARG_SIZE = 5;
+  private static final int EXPECTED_ARG_SIZE = 3;
   private static final String INVALID_ARGUMENT_COUNT = "expected arg size=" + 
                                                         EXPECTED_ARG_SIZE +
                                                        " actual arg size=%d";
   private static final String NMAX_EXCEEDED_MSG = "Predefined nmax value must be higher " + 
                                                   "current nmax=%d";
-  private static final String USAGE = "java prime.QuadraticPrimes <a_max> <a_min> <b_max> <b_min> <n_max>" +
+  private static final String USAGE = "java prime.QuadraticPrimes <a_max> <b_max> <n_max>" +
   "where n^2 + a*n +b";
 
   private int solution = -1;
@@ -30,15 +30,11 @@ public class QuadraticPrimes
       }
     try
       {
-      short a_max = Short.parseShort(args[0]);
-      short a_min = Short.parseShort(args[1]);
-      short b_max = Short.parseShort(args[2]);
-      short b_min = Short.parseShort(args[3]);
-      short n_max = Short.parseShort(args[4]);
+      int a_max = Integer.parseInt(args[0]);
+      int b_max = Integer.parseInt(args[1]);
+      int n_max = Integer.parseInt(args[2]);
       CoefficientLimits limits = new CoefficientLimits(a_max,
-                                     a_min,
-                                     b_max,
-                                     b_min
+                                     b_max
                                     );
       QuadraticPrimes qPrimes = new QuadraticPrimes(limits,n_max);
       System.out.printf("solution=%d%n", qPrimes.solution());
@@ -53,8 +49,8 @@ public class QuadraticPrimes
                         int n_max)
     {
     primes = new Eratosthenes().getListOfPrimesUnder(quadraticFunc(n_max,
-                                                                   (short)limits.a_max,
-                                                                   (short)limits.b_max)
+                                                                   limits.a_max,
+                                                                   limits.b_max)
                                                                   );
     primes.add(0,1);
     primeSet = new HashSet<>(primes);
@@ -74,10 +70,10 @@ public class QuadraticPrimes
           {
           break;
           }
-        tryQuadraticFunc((short)a,
-                         (short)b);
-        tryQuadraticFunc((short)a_minus,
-                         (short)b);
+        tryQuadraticFunc(a,
+                         b);
+        tryQuadraticFunc(a_minus,
+                         b);
         }
       }
     }
@@ -90,8 +86,8 @@ public class QuadraticPrimes
     return solution;
     }
   
-  private void tryQuadraticFunc(short a,
-                                short b)
+  private void tryQuadraticFunc(int a,
+                                int b)
     {
     for (int n = 0; n < this.n_max+1 ; n++)
       {
@@ -122,8 +118,8 @@ public class QuadraticPrimes
     }
 
   private int quadraticFunc(int n,
-                            short a,
-                            short b)
+                            int a,
+                            int b)
     {
     return (n*n) + (a*n) + b;
     }
@@ -131,20 +127,14 @@ public class QuadraticPrimes
   private static class CoefficientLimits
     {
     // n^2 + an + b
-    private final short a_max;
-    private final short a_min;
-    private final short b_max;
-    private final short b_min;
+    private final int a_max;
+    private final int b_max;
     
-    CoefficientLimits(short a_max,
-                      short a_min,
-                      short b_max,
-                      short b_min)
+    CoefficientLimits(int a_max,
+                      int b_max)
       {
       this.a_max = a_max;
-      this.a_min = a_min;
       this.b_max = b_max;
-      this.b_min = b_min;
       }
     }
 
