@@ -1,6 +1,7 @@
 package com.schibsted.bergun;
 
 import java.io.FileNotFoundException;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.lang.management.ManagementFactory;
@@ -17,6 +18,8 @@ public class SortLargeFileHelper
 		public static final String FILE_EXTENSION_DELIMITER = ".";
 
 		public static final String SUB_FILE_INDEX_SEPARATOR = "_";
+
+		private final static String SORTED_FILE_SUFFIX = "sorted";
 
 		public static final short AVERAGE_LINE_W_ASSUMPTION = 32;
 
@@ -77,6 +80,11 @@ public class SortLargeFileHelper
 								.getUsed());
 			}
 
+		public static String getProcessId()
+			{
+				return ManagementFactory.getRuntimeMXBean().getName();
+			}
+
 		public static void checkIfFileExists(Path path) throws FileNotFoundException
 			{
 				if (!Files.exists(path))
@@ -128,17 +136,35 @@ public class SortLargeFileHelper
 
 			}
 
-		public static void writeBufferToSubFile(Queue<String> buffer,
-																						String subFileName)
-				throws FileNotFoundException
+		public static void writeQueueBufferToFile(Queue<String> buffer,
+																							String fileName)
+				throws IOException
 			{
-				try (PrintWriter writer = new PrintWriter(subFileName))
+				try (PrintWriter writer = new PrintWriter(
+						new FileWriter(fileName, true)))
 					{
 						while (!buffer.isEmpty())
 							{
-								writer.println(buffer.dequeue());
+								writer.println((buffer.dequeue()));
 							}
 					}
+			}
+
+		public static void readFileToQueueBuffer(	Path path,
+																							Queue<String> buffer)
+				throws IOException
+
+			{
+				try (Scanner scanner = new Scanner(path))
+					{
+						while (scanner.hasNextLine())
+							{
+								String line = scanner.nextLine();
+
+								buffer.enqueue(line);
+							}
+					}
+
 			}
 
 		public static String generateSubFileName(	String inputFileName,
@@ -158,6 +184,18 @@ public class SortLargeFileHelper
 						builder.append(SUB_FILE_INDEX_SEPARATOR + subFileIndex);
 					}
 				return builder.toString();
+
+			}
+
+		public static Path generateOutputFilePath(Path inputFilePath)
+			{
+
+				StringBuilder builder = new StringBuilder(inputFilePath.toString());
+
+				builder.append(SUB_FILE_INDEX_SEPARATOR + getProcessId()
+						+ SUB_FILE_INDEX_SEPARATOR + SORTED_FILE_SUFFIX);
+
+				return Paths.get(builder.toString());
 
 			}
 

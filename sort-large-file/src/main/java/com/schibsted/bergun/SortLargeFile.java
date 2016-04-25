@@ -8,6 +8,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Scanner;
 
+import edu.princeton.cs.algorithms.MinPQ;
 import edu.princeton.cs.algorithms.Queue;
 
 /**
@@ -21,8 +22,6 @@ public class SortLargeFile
 				+ "Hint: Use -Xmx to limit heap memory size");
 
 		private final static String FILE_ENCODING = "UTF-8";
-
-		private final static String SORTED_FILE_SUFFIX = "_sorted";
 
 		public static void main(String... args) throws IOException
 			{
@@ -64,39 +63,124 @@ public class SortLargeFile
 
 						long bufferSize = availableHeapSize / (subFileCount + 1);
 
+						Path outputFilePath = SortLargeFileHelper
+								.generateOutputFilePath(inputFilePath);
+
 						nWayMergeSubFiles(inputFilePath,
+															outputFilePath,
+															bufferSize,
 															subFileCount,
-															availableHeapSize);
+															expectedMergeBufferCount);
 
 					} finally
 					{
-						// SortLargeFileHelper.cleanUpSubFiles(inputFilePath.toString(),
-						// subFileCount,
-						// expectedMergeBufferCount);
+						 SortLargeFileHelper.cleanUpSubFiles(inputFilePath.toString(),
+						 subFileCount,
+						 expectedMergeBufferCount);
 					}
 
 			}
 
 		private static void nWayMergeSubFiles(Path inputFilePath,
+																					Path outputFilePath,
+																					long bufferSize,
 																					int subFileCount,
-																					long availableHeapSize)
+																					int subSortedFileCount)
+				throws IOException
 			{
-				int subBufferCount = subFileCount;
-				long bufferSize = availableHeapSize / (subBufferCount + 1); // + output
-																																		// buffer
-				// Since bufferSize will be around GB values this math expression
-				// I expect to be fitting in a integer value.
-				int strBufferSize = (int) (bufferSize
-						/ (long) SortLargeFileHelper.AVERAGE_LINE_W_ASSUMPTION);
-
+				short[] sortedFileIndex = new short[subFileCount];
 				List<Queue<String>> inputBuffers = new ArrayList<>();
 				Queue<String> outputBuffers = new Queue<>();
-				for (int fileIndex = 0; fileIndex < subFileCount; fileIndex++)
+				for (int i = 0; i < subFileCount; i++)
 					{
-						inputBuffers.add(new Queue<>());
-
+						inputBuffers.add(	i,
+															new Queue<>());
+						Path path = Paths
+								.get(SortLargeFileHelper
+										.generateSubFileName(	SortLargeFileHelper
+												.generateSubFileName(	inputFilePath.toString(),
+																							i),
+																					sortedFileIndex[i]));
+						SortLargeFileHelper.readFileToQueueBuffer(path,
+																											inputBuffers.get(i));
+						sortedFileIndex[i]++;
 					}
 
+				long bytesRead = 0;
+				Queue<String> queue = nWayCompare(inputFilePath,
+																					inputBuffers,
+																					sortedFileIndex,
+																					subSortedFileCount);
+				while (true)
+					{
+						if (queue == null)
+							{
+								SortLargeFileHelper.writeQueueBufferToFile(	outputBuffers,
+																														outputFilePath
+																																.toString());
+								break;
+							}
+						String line = queue.dequeue();
+						outputBuffers.enqueue(line);
+						bytesRead += SortLargeFileHelper.STRING_MEM_OVERHEAD_ASSUMPTION
+								+ line.length() * 2;
+						if (bytesRead >= bufferSize)
+							{
+								SortLargeFileHelper.writeQueueBufferToFile(	outputBuffers,
+																														outputFilePath
+																																.toString());
+								bytesRead = 0;
+							}
+						queue = nWayCompare(inputFilePath,
+																inputBuffers,
+																sortedFileIndex,
+																subSortedFileCount);
+					}
+
+			}
+
+		private static Queue<String> nWayCompare(	Path inputFilePath,
+																							List<Queue<String>> inputBuffers,
+																							short[] sortedFileIndex,
+																							int subSortedFileCount)
+				throws IOException
+			{
+				MinPQ<HeapPeekElement> minPq = new MinPQ<>();
+				for (int i = 0; i < inputBuffers.size(); i++)
+					{
+						if (inputBuffers.get(i).isEmpty())
+							{
+								if (sortedFileIndex[i] >= subSortedFileCount)
+									{
+										continue;
+									} else
+									{
+										Path path = Paths.get(SortLargeFileHelper
+												.generateSubFileName(	SortLargeFileHelper
+														.generateSubFileName(	inputFilePath.toString(),
+																									i),
+																							sortedFileIndex[i]));
+										sortedFileIndex[i]++;
+										if (!Files.exists(path))
+											{
+
+												continue;
+											}
+										SortLargeFileHelper.readFileToQueueBuffer(path,
+																															inputBuffers
+																																	.get(i));
+									}
+							}
+						HeapPeekElement elem = new HeapPeekElement(i,
+								inputBuffers.get(i).peek());
+						minPq.insert(elem);
+					}
+				if (minPq.isEmpty())
+					{
+						return null;
+					}
+				HeapPeekElement min = minPq.min();
+				return inputBuffers.get(min.subFileIndex);
 			}
 
 		private static int sortFileInChunks(Path inputFilePath,
@@ -110,7 +194,6 @@ public class SortLargeFile
 						int stringArraySize = (int) (availableHeapSize
 								/ (SortLargeFileHelper.AVERAGE_STRING_MEM_ASSUMPTION
 										+ SortLargeFileHelper.STRING_MEM_OVERHEAD_ASSUMPTION));
-						System.out.println(stringArraySize);
 
 						String[] buffer = new String[stringArraySize];
 						int bytesRead = 0;
@@ -121,7 +204,6 @@ public class SortLargeFile
 									{
 										if (!sc.hasNextLine() || bytesRead >= availableHeapSize)
 											{
-												System.out.println(bytesRead);
 												break;
 											}
 
@@ -136,7 +218,6 @@ public class SortLargeFile
 																					index);
 								long ioBufferSize = availableHeapSize
 										/ expectedMergeBufferCount;
-								System.out.println(expectedMergeBufferCount);
 								SortLargeFileHelper.writeBufferToSubFile(	buffer,
 																													index,
 																													ioBufferSize,
@@ -144,11 +225,60 @@ public class SortLargeFile
 																															.generateSubFileName(	inputFilePath
 																																	.toString(),
 																																										subFileCount));
-								// TODO remove this debug message
-								System.out.println(subFileCount++);
+								subFileCount++;
 							}
 					}
 				return subFileCount;
+			}
+
+		private static class HeapPeekElement implements Comparable<HeapPeekElement>
+			{
+				private final int subFileIndex;
+				private final String line;
+
+				public HeapPeekElement(	int subFileIndex,
+																String line)
+					{
+
+						this.subFileIndex = subFileIndex;
+						this.line = line;
+					}
+
+				@Override
+				public int hashCode()
+					{
+						final int prime = 31;
+						int result = 1;
+						result = prime * result + ((line == null) ? 0
+								: line.hashCode());
+						return result;
+					}
+
+				@Override
+				public boolean equals(Object obj)
+					{
+						if (this == obj)
+							return true;
+						if (obj == null)
+							return false;
+						if (getClass() != obj.getClass())
+							return false;
+						HeapPeekElement other = (HeapPeekElement) obj;
+						if (line == null)
+							{
+								if (other.line != null)
+									return false;
+							} else if (!line.equals(other.line))
+							return false;
+						return true;
+					}
+
+				@Override
+				public int compareTo(HeapPeekElement o)
+					{
+						return this.line.compareTo(o.line);
+					}
+
 			}
 
 	}

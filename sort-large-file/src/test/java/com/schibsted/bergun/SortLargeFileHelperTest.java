@@ -38,6 +38,7 @@ public class SortLargeFileHelperTest
 
 		public void shouldWriteArrayToSubFile(String[] lines,
 																					String fileName,
+																					long ioBufSize,
 																					int elementPerFile,
 																					int expectedSubFileCount,
 																					int expectedSubSortFileCount,
@@ -47,7 +48,6 @@ public class SortLargeFileHelperTest
 				// TODO too long test case berakdown
 				int elementCount = 0;
 				int subFileIndex = 0;
-				long ioBufSize = 1000000;
 
 				List<String> bufLines = new ArrayList<>();
 				for (String line : lines)
@@ -116,6 +116,14 @@ public class SortLargeFileHelperTest
 					}
 			}
 
+		@Test
+		public void shouldGetProcessId()
+			{
+				String processId = SortLargeFileHelper.getProcessId();
+				System.out.println(processId);
+				Assert.assertNotNull(processId);
+			}
+
 		@DataProvider
 		public static Object[][] getSubFileWritingData()
 			{
@@ -123,7 +131,7 @@ public class SortLargeFileHelperTest
 					{ "test0", "test1", "test2", "test3" };
 				return new Object[][]
 					{
-							{ lines, "output", 1, 4, 1, "test" } };
+							{ lines, "output", 1000000, 1, 4, 1, "test" } };
 			}
 
 		@DataProvider
