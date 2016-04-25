@@ -12,3 +12,10 @@
 hs_err_pid*
 
 *target*
+.metadata/
+.recommenders/
+RemoteSystemsTempFiles/
+.classpath
+.project
+.settings/
+test-output/
