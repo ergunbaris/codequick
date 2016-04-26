@@ -4,6 +4,7 @@ import java.io.FileNotFoundException;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.io.UnsupportedEncodingException;
 import java.lang.management.ManagementFactory;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -36,7 +37,11 @@ public class SortLargeFileHelper
 
 		private static final int SCANNER_BUFFER_SIZE = 1024;
 
+		public static final int TWO_BYTES = 2;
+
 		public static final int MIN_SUPPORTED_AVAILABLE_HEAP_SIZE = 4194304;
+
+		public final static String FILE_ENCODING = "UTF-8";
 
 		private static final String FILE_NOT_FOUND = "%s file does not exist!";
 
@@ -58,18 +63,17 @@ public class SortLargeFileHelper
 				return availableHeapSize;
 			}
 
-		public static int calculateExpectedMergeBufferCount(long filesize,
-																												long availableHeapSize)
+		public static int calculateMergeBufferCount(long filesize,
+																								long availableHeapSize)
 			{
 				int javaOverHeads = (STRING_MEM_OVERHEAD_ASSUMPTION
 						+ AVERAGE_STRING_MEM_ASSUMPTION) / AVERAGE_STRING_MEM_ASSUMPTION;
-				int expectedSubFileCount = (int) Math
-						.ceil((filesize * javaOverHeads) / availableHeapSize) + 1; // +1 for
-																																				// small
-																																				// subfile
-																																				// differences
-
-				return expectedSubFileCount + 1; // take into account output buffer
+				int expectedInputBufferCount = (int) Math
+						.ceil((double) (filesize * javaOverHeads)
+								/ (double) availableHeapSize)
+						+ 1; // +1 for small subfile differences
+				int outputBufferCount = 1;
+				return expectedInputBufferCount + outputBufferCount;
 			}
 
 		public static long getCurrentHeapSize()
@@ -96,33 +100,34 @@ public class SortLargeFileHelper
 
 		public static void writeBufferToSubFile(String[] lines,
 																						int hi,
-																						long ioBufferSize,
-																						String subFileName)
-				throws FileNotFoundException
+																						long bufferSize,
+																						String sortedSubFileName)
+				throws FileNotFoundException, UnsupportedEncodingException
 			{
 				PrintWriter writer = null;
 				try
 					{
-						int subSortedFileCount = 0;
+						int sortedSubFileChunkCount = 0;
 						writer = new PrintWriter(
-								SortLargeFileHelper.generateSubFileName(subFileName,
-																												subSortedFileCount));
+								SortLargeFileHelper.generateSubFileName(sortedSubFileName,
+																												sortedSubFileChunkCount),
+								FILE_ENCODING);
 						long bytesRead = 0;
 						for (int i = 0; i < hi; i++)
 							{
 								writer.println(lines[i]);
 								bytesRead += SortLargeFileHelper.STRING_MEM_OVERHEAD_ASSUMPTION
-										+ lines[i].length() * 2;
-								if (bytesRead >= ioBufferSize)
+										+ lines[i].length() * TWO_BYTES;
+								if (bytesRead >= bufferSize)
 									{
 
 										bytesRead = 0;
-										subSortedFileCount++;
+										sortedSubFileChunkCount++;
 										writer.close();
 										writer.flush();
-										writer = new PrintWriter(
-												SortLargeFileHelper.generateSubFileName(subFileName,
-																																subSortedFileCount));
+										writer = new PrintWriter(SortLargeFileHelper
+												.generateSubFileName(	sortedSubFileName,
+																							sortedSubFileChunkCount));
 									}
 							}
 					} finally
@@ -200,19 +205,20 @@ public class SortLargeFileHelper
 			}
 
 		public static void cleanUpSubFiles(	String filename,
-																				int subFileCount,
-																				int subSortFileCount)
+																				int sortedSubFileCount,
+																				int sortedSubChunkFileCount)
 				throws IOException
 			{
-				for (int i = 0; i < subFileCount; i++)
+				for (int i = 0; i < sortedSubFileCount; i++)
 					{
-						for (int j = 0; j < subSortFileCount; j++)
+						for (int j = 0; j < sortedSubChunkFileCount; j++)
 							{
-								Path inputFilePath = Paths
-										.get(generateSubFileName(	generateSubFileName(filename,
-																																	i),
-																							j));
-								Files.deleteIfExists(inputFilePath);
+								String sortedSubFileName = generateSubFileName(	filename,
+																																i);
+								String sortedSubChunkFileName = generateSubFileName(sortedSubFileName,
+																																		j);
+								Path sortedSubChunkFilePath = Paths.get(sortedSubChunkFileName);
+								Files.deleteIfExists(sortedSubChunkFilePath);
 							}
 					}
 
