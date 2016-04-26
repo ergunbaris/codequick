@@ -29,7 +29,10 @@ public class SortLargeFile
 					}
 				// NOTE: For this exercise I am not going to require an output file path
 				// and concentrate on algorithmic challenge.
+				long start = System.nanoTime();
 				SortLargeFile.sort(args[0]);
+				long end = System.nanoTime();
+				System.err.printf("duration=%d", (end - start)/1_000_000);
 			}
 
 		public static void sort(String fileName) throws IOException
@@ -92,20 +95,36 @@ public class SortLargeFile
 																sortedSubFileCount);
 
 				long bytesRead = 0;
-				Queue<String> queue = nWayCompare(inputFilePath,
-																					inputBuffers,
-																					sortedSubFileChunkIndices,
-																					sortedSubChunkFileCount);
+				MinPQ<HeapPeekElement> minPq = new MinPQ<>();
+				initializeMinPq(inputBuffers,
+												minPq);
+
 				while (true)
 					{
-						if (queue == null)
+						int inputBufferIndex = nWayCompare(minPq);
+						if (inputBufferIndex == -1)
 							{
 								SortLargeFileHelper.writeQueueBufferToFile(	outputBuffer,
 																														outputFilePath
 																																.toString());
 								break;
 							}
+						Queue<String> queue = inputBuffers.get(inputBufferIndex);
 						String line = queue.dequeue();
+						boolean queueFull = !queue.isEmpty();
+						if (!queueFull)
+							{
+								queueFull = refillIfBufferEmpty(queue,
+																								inputFilePath,
+																								sortedSubFileChunkIndices,
+																								sortedSubChunkFileCount,
+																								inputBufferIndex);
+							}
+						if (queueFull)
+							{
+								minPq.insert(new HeapPeekElement(inputBufferIndex,
+										queue.peek()));
+							}
 						outputBuffer.enqueue(line);
 						bytesRead += SortLargeFileHelper.STRING_MEM_OVERHEAD_ASSUMPTION
 								+ line.length() * SortLargeFileHelper.TWO_BYTES;
@@ -116,12 +135,20 @@ public class SortLargeFile
 																																.toString());
 								bytesRead = 0;
 							}
-						queue = nWayCompare(inputFilePath,
-																inputBuffers,
-																sortedSubFileChunkIndices,
-																sortedSubChunkFileCount);
+
 					}
 
+			}
+
+		private static void initializeMinPq(List<Queue<String>> inputBuffers,
+																				MinPQ<HeapPeekElement> minPq)
+			{
+				for (int i = 0; i < inputBuffers.size(); i++)
+					{
+						HeapPeekElement elem = new HeapPeekElement(i,
+								inputBuffers.get(i).peek());						
+						minPq.insert(elem);
+					}
 			}
 
 		private static void initializeInputBuffers(	List<Queue<String>> inputBuffers,
@@ -147,35 +174,15 @@ public class SortLargeFile
 					}
 			}
 
-		private static Queue<String> nWayCompare(	Path inputFilePath,
-																							List<Queue<String>> inputBuffers,
-																							short[] sortedSubFileChunkIndices,
-																							int sortedSubChunkFileCount)
+		private static int nWayCompare(MinPQ<HeapPeekElement> minPq)
 				throws IOException
 			{
-				MinPQ<HeapPeekElement> minPq = new MinPQ<>();
-				for (int i = 0; i < inputBuffers.size(); i++)
-					{
-						boolean cont = refillIfBufferEmpty(	inputBuffers.get(i),
-																								inputFilePath,
-																								sortedSubFileChunkIndices,
-																								sortedSubChunkFileCount,
-																								i);
-						if (cont)
-							{
-								continue;
-							}
-
-						HeapPeekElement elem = new HeapPeekElement(i,
-								inputBuffers.get(i).peek());
-						minPq.insert(elem);
-					}
 				if (minPq.isEmpty())
 					{
-						return null;
+						return -1;
 					}
-				HeapPeekElement min = minPq.min();
-				return inputBuffers.get(min.subFileIndex);
+				HeapPeekElement min = minPq.delMin();				
+				return min.subFileIndex;
 			}
 
 		private static boolean refillIfBufferEmpty(	Queue<String> inputBuffer,
@@ -189,7 +196,7 @@ public class SortLargeFile
 					{
 						if (sortedSubFileChunkIndices[inputBufferIndex] >= sortedSubChunkFileCount)
 							{
-								return true;
+								return false;
 							} else
 							{
 								String sortedSubFileName = SortLargeFileHelper
@@ -202,10 +209,11 @@ public class SortLargeFile
 								sortedSubFileChunkIndices[inputBufferIndex]++;
 								if (!Files.exists(path))
 									{
-										return true;
-									}								
+										return false;
+									}
 								SortLargeFileHelper.readFileToQueueBuffer(path,
 																													inputBuffer);
+								return true;
 							}
 					}
 				return false;
