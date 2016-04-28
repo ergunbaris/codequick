@@ -11,12 +11,15 @@ import java.util.Scanner;
 import edu.princeton.cs.algorithms.MinPQ;
 import edu.princeton.cs.algorithms.Queue;
 
+
 /**
- * @author bergun
+ * The Class SortLargeFile.
  *
+ * @author bergun
  */
 public class SortLargeFile
 	{
+		
 		private static final String USAGE = String.format("%nUsage: java "
 				+ "com.schibsted.bergun.SortLargeFile <input_file_path> %n"
 				+ "Hint: Use -Xmx to limit heap memory size");
@@ -35,6 +38,14 @@ public class SortLargeFile
 				System.err.printf("duration=%d", (end - start)/1_000_000);
 			}
 
+		/**
+		 *  For sorting large files that could not fit in memory.
+		 *  The sorted file can be found on the same path as the input file
+		 *   with the _<pid>_sorted * suffix.
+		 *
+		 * @param fileName the file name that is going to be sorted
+		 * @throws IOException Signals that an I/O exception has occurred.
+		 */
 		public static void sort(String fileName) throws IOException
 			{
 				Path inputFilePath = Paths.get(fileName);
@@ -52,13 +63,13 @@ public class SortLargeFile
 
 						sortedSubChunkFileCount = SortLargeFileHelper
 								.calculateMergeBufferCount(	inputFileSize,
-																						availableHeapSize);
+															availableHeapSize);
 
 						long bufferSize = availableHeapSize / sortedSubChunkFileCount;
 
 						sortedSubFileCount = sortFileInChunks(inputFilePath,
-																									availableHeapSize,
-																									bufferSize);
+															  availableHeapSize,
+															  bufferSize);
 
 						Path outputFilePath = SortLargeFileHelper
 								.generateOutputFilePath(inputFilePath);
@@ -68,21 +79,24 @@ public class SortLargeFile
 															bufferSize,
 															sortedSubFileCount,
 															sortedSubChunkFileCount);
+						System.out.printf("file %s is sorted. output file: %s%n", 
+										  inputFilePath.toString(), 
+										  outputFilePath.toString());
 
 					} finally
 					{
 						SortLargeFileHelper.cleanUpSubFiles(inputFilePath.toString(),
-																								sortedSubFileCount,
-																								sortedSubChunkFileCount);
+															sortedSubFileCount,
+															sortedSubChunkFileCount);
 					}
 
 			}
 
 		private static void nWayMergeSubFiles(Path inputFilePath,
-																					Path outputFilePath,
-																					long bufferSize,
-																					int sortedSubFileCount,
-																					int sortedSubChunkFileCount)
+											  Path outputFilePath,
+											  long bufferSize,
+											  int sortedSubFileCount,
+											  int sortedSubChunkFileCount)
 				throws IOException
 			{
 				short[] sortedSubFileChunkIndices = new short[sortedSubFileCount];
@@ -268,9 +282,14 @@ public class SortLargeFile
 				return sortedSubFileCount;
 			}
 
+		/**
+		 * The Class HeapPeekElement.
+		 */
 		private static class HeapPeekElement implements Comparable<HeapPeekElement>
 			{
+				
 				private final int subFileIndex;
+				
 				private final String line;
 
 				public HeapPeekElement(	int subFileIndex,
