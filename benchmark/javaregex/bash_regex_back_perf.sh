@@ -3,7 +3,7 @@
 B="a"
 A="aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaac";
 
-for i in `seq 1 100`; do
+for i in `seq 1 1000`; do
   ts=$(date +%s%N)
   A=$B$A 
   echo $A | egrep "(a|aa)*c"  
