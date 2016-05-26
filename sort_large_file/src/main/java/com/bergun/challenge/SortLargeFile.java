@@ -19,18 +19,15 @@ import edu.princeton.cs.algorithms.Queue;
 public class SortLargeFile {
 
     private static final String USAGE = String.format("%nUsage: java "
-	    + "com.schibsted.bergun.SortLargeFile <input_file_path> %n" + "Hint: Use -Xmx to limit heap memory size");
+	    + "com.bergun.challenge.SortLargeFile <input_file_path> %n" + "Hint: Use -Xmx to limit heap memory size");
 
     public static void main(String... args) throws IOException {
 	if (args.length != 1) {
 	    throw new IllegalArgumentException(USAGE);
 	}
 	// NOTE: For this exercise I am not going to require an output file path
-	// and concentrate on algorithmic challenge.
-	long start = System.nanoTime();
-	SortLargeFile.sort(args[0]);
-	long end = System.nanoTime();
-	System.err.printf("duration=%d", (end - start) / 1_000_000);
+	// and concentrate on algorithmic challenge.	
+	SortLargeFile.sort(args[0]);	
     }
 
     /**
@@ -49,23 +46,20 @@ public class SortLargeFile {
 	int sortedSubFileCount = 0;
 	int sortedSubChunkFileCount = 0;
 	try {
-
 	    long heapSize = SortLargeFileHelper.getCurrentHeapSize();
 	    long availableHeapSize = SortLargeFileHelper.calculateAvailableHeapSize(heapSize);
-
 	    long inputFileSize = Files.size(inputFilePath);
-
 	    sortedSubChunkFileCount = SortLargeFileHelper.calculateMergeBufferCount(inputFileSize, availableHeapSize);
-
 	    long bufferSize = availableHeapSize / sortedSubChunkFileCount;
-
-	    sortedSubFileCount = sortFileInChunks(inputFilePath, availableHeapSize, bufferSize);
-
 	    Path outputFilePath = SortLargeFileHelper.generateOutputFilePath(inputFilePath);
-
+	    long start = System.nanoTime();
+	    sortedSubFileCount = sortFileInChunks(inputFilePath, availableHeapSize, bufferSize);
 	    nWayMergeSubFiles(inputFilePath, outputFilePath, bufferSize, sortedSubFileCount, sortedSubChunkFileCount);
-	    System.out.printf("file %s is sorted. output file: %s%n", inputFilePath.toString(),
-		    outputFilePath.toString());
+	    long end = System.nanoTime();
+	    long elapsedMsec = (end - start) / 1_000_000;
+	    System.out.printf("file %s is sorted to output file: %s using %d subfiles in %d chunks in %d msec. %n",
+		    inputFilePath.toString(), outputFilePath.toString(), sortedSubFileCount, sortedSubChunkFileCount,
+		    elapsedMsec);
 
 	} finally {
 	    SortLargeFileHelper.cleanUpSubFiles(inputFilePath.toString(), sortedSubFileCount, sortedSubChunkFileCount);
@@ -78,13 +72,10 @@ public class SortLargeFile {
 	short[] sortedSubFileChunkIndices = new short[sortedSubFileCount];
 	List<Queue<String>> inputBuffers = new ArrayList<>();
 	Queue<String> outputBuffer = new Queue<>();
-
 	initializeInputBuffers(inputBuffers, inputFilePath, sortedSubFileChunkIndices, sortedSubFileCount);
-
 	long bytesRead = 0;
 	MinPQ<HeapPeekElement> minPq = new MinPQ<>();
 	initializeMinPq(inputBuffers, minPq);
-
 	while (true) {
 	    int inputBufferIndex = nWayCompare(minPq);
 	    if (inputBufferIndex == -1) {
