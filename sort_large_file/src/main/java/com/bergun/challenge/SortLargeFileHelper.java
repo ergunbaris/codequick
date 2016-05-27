@@ -95,16 +95,16 @@ public class SortLargeFileHelper {
 
 		    bytesRead = 0;
 		    sortedSubFileChunkCount++;
-		    writer.close();
 		    writer.flush();
+		    writer.close();		    
 		    writer = new PrintWriter(
 			    SortLargeFileHelper.generateSubFileName(sortedSubFileName, sortedSubFileChunkCount));
 		}
 	    }
 	} finally {
 	    if (null != writer) {
-		writer.close();
 		writer.flush();
+		writer.close();		
 	    }
 	}
 
