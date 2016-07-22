@@ -7,84 +7,108 @@ import java.util.Collections;
 
 public class AlmostPi
 {
-  public static final long PI_UNFLOAT = (long)(Math.PI * Math.pow(10,15));
-  public static final int BASE_N = 200;
+  private List<Pair> sumOfPairs =new ArrayList<Pair>();
   public static void main(String...args)
-  {
+    {
      int N = Integer.parseInt(args[0]);
      long startConstruct = System.nanoTime();
-     List<Pair> sumOfPairs = new AlmostPi().constructSums(N);
+     AlmostPi pi = new AlmostPi(N);
      long endConstruct = System.nanoTime();
-     double time = (endConstruct-startConstruct)/1_000_000_000;
+     double time = (endConstruct - startConstruct)/1_000_000;
      System.out.printf("construct time=%5.10f%n", time);
      long startAlgo = System.nanoTime();
-     System.out.printf("%d %n", new AlmostPi().getAlmostPi(sumOfPairs));
+     System.out.printf("%d %n", pi.getAlmostPi());
      long endAlgo = System.nanoTime();
-     time = (endAlgo-startAlgo)/1_000_000_000;
+     time = (endAlgo-startAlgo)/1_000_000;
      System.out.printf("algo time=%5.10f%n", time);
+    }
 
-  }
-  public List<Pair> constructSums(int N)
-  {
-  int len = (int)(1.5*BASE_N*N/BASE_N) +1;
-  List<Pair> sumOfPairs = new ArrayList<Pair>();
-  int ind=0;
-  for(int i=0;i<len;i++)
+  public AlmostPi(int N)
     {
-    for(int j=i+1;j<len;j++)
+    double [] fnArray = calculateFnArray(N);
+    calculateSumOfPairs(fnArray);
+    }
+  private double [] calculateFnArray(int N)
+    {
+    int margin = ((int)(1.425 * N)) + 1;
+    double [] fnArray = new double[margin];
+    for (int i = 0; i < margin; i++)
       {
-      double sum = f(i,N)+f(j,N);
-      if(sum < Math.PI)
+      double result = f(i,N);
+      if (result >= Math.PI)
         {
-        sumOfPairs.add(new Pair(i,j,sum));
-        ind++;
-        //System.err.printf("ind=%d%n",ind);
+        break;
+        }
+      fnArray[i] = result;
+      }
+    return fnArray;
+    }
+  public void calculateSumOfPairs(double [] fnArray)
+    {
+    for(int i=0; i < fnArray.length; i++)
+      {
+      for(int j=i+1; j < fnArray.length; j++)
+        {
+        double sum = fnArray[i] + fnArray[j];
+        if(sum < Math.PI)
+          {
+          sumOfPairs.add(new Pair(i,j,sum));
+          }
+        else
+          {
+          break;
+          }
         }
       }
     }
-  return sumOfPairs;
-  }
-  public long getAlmostPi(List<Pair> sumOfPairs)
-  {
+  public long getAlmostPi()
+    {
     Collections.sort(sumOfPairs);
     double smallestDiff = -1.0;
     Pair pair1 = null;
     Pair pair2 = null;
-    for(int i=0;i<sumOfPairs.size();i++)
+    int numberOfPairs = sumOfPairs.size();
+    for(int i=0; i < numberOfPairs; i++)
       {
       double search = Math.PI - sumOfPairs.get(i).getSum();
-
-      if(search <= 0.0)
-        {
-          break;
-        }
       Pair searchPair = new Pair(-1,-1, search);
       int index = Collections.binarySearch(sumOfPairs, searchPair);
       if(index < 0)
         {
         int insertpoint = 0-(index+1);
-        double sumAtInsertionPoint = sumOfPairs.get(i).getSum() + sumOfPairs.get(insertpoint).getSum();
-        double diffAtInsertionPoint = Math.abs(sumAtInsertionPoint-Math.PI);
-        if(smallestDiff == -1.0 || diffAtInsertionPoint<smallestDiff)
+        int biggerPairIndex = insertpoint;
+        int smallerPairIndex = insertpoint - 1;
+        double sumWithBiggerPair = Double.POSITIVE_INFINITY;
+        double sumWithSmallerPair = Double.POSITIVE_INFINITY;
+        if (biggerPairIndex < numberOfPairs)
           {
-          smallestDiff = diffAtInsertionPoint;
+          sumWithBiggerPair = sumOfPairs.get(i).getSum() + sumOfPairs.get(biggerPairIndex).getSum();
+          }
+        if (smallerPairIndex >= 0)
+          {
+          sumWithSmallerPair = sumOfPairs.get(i).getSum() + sumOfPairs.get(smallerPairIndex).getSum();
+          }
+        double diffWithBiggerPair = Math.abs(sumWithBiggerPair - Math.PI);
+        double diffWithSmallerPair = Math.abs(sumWithSmallerPair - Math.PI);
+        double diff = Double.POSITIVE_INFINITY;
+        int pairIndex = -1;
+        if (diffWithBiggerPair <= diffWithSmallerPair)
+          {
+          diff = diffWithBiggerPair;
+          pairIndex = biggerPairIndex;
+          }
+        else
+          {
+          diff = diffWithSmallerPair;
+          pairIndex = smallerPairIndex;
+          }
+        if(smallestDiff == -1.0 || diff < smallestDiff)
+          {
+          smallestDiff = diff;
           System.err.printf("smallestDiff=%1.15f%n", smallestDiff);
           pair1 = sumOfPairs.get(i);
-          pair2 = sumOfPairs.get(insertpoint);
+          pair2 = sumOfPairs.get(pairIndex);
           System.err.printf("a=%d,b=%d,c=%d,d=%d%n",pair1.getA(), pair1.getB(), pair2.getA(),pair2.getB());
-          }
-        if(insertpoint != 0)
-          {
-          double sumAfterInsertionPoint = sumOfPairs.get(i).getSum() + sumOfPairs.get(insertpoint-1).getSum();
-          double diffAfterInsertionPoint = Math.abs(sumAfterInsertionPoint-Math.PI);
-          if(smallestDiff == -1.0 || diffAfterInsertionPoint<smallestDiff)
-            {
-            smallestDiff = diffAfterInsertionPoint;
-            System.err.printf("smallestDiff=%1.15f%n", smallestDiff);
-            pair1 = sumOfPairs.get(i);
-            pair2 = sumOfPairs.get(insertpoint-1);
-          System.err.printf("a=%d,b=%d,c=%d,d=%d%n",pair1.getA(), pair1.getB(), pair2.getA(),pair2.getB());
-            }
           }
         }
        else
@@ -105,12 +129,12 @@ public class AlmostPi
     double result = Math.pow(pair1.getA(),2) + Math.pow(pair1.getB(),2) + 
                     Math.pow(pair2.getA(),2) + Math.pow(pair2.getB(),2);
     return (long)result;
-  }
+    }
 
   private double f(double a, double base)
     {
-      double expA = a/base;
-      return Math.pow(Math.E,expA)-1;
+    double expA = a / base;
+    return Math.pow(Math.E, expA)-1;
     }
 }
 
