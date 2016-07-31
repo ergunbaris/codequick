@@ -17,7 +17,7 @@ public class Divisors
     }
   public Divisors(int maxLimit)
     {
-    primes = new Eratosthenes().getListOfPrimesUnder((int)Math.sqrt(maxLimit)+100);
+    primes = new Eratosthenes().getListOfPrimesUnder(maxLimit);
     }
   public int findSumOfAllDivisors(int number)
     {
@@ -31,7 +31,7 @@ public class Divisors
     }
   public Set<Integer> findAllDivisors(int number)
     {
-    Map<Integer, Integer> primeDivisorsUnderSqrt = getPrimeDivisorsUnderSqrt(number);
+    Map<Integer, Integer> primeDivisorsUnderSqrt = getPrimeDivisors(number);
     int sqrtNumber = (int)Math.sqrt(number);
     Set<Integer> divisors = new TreeSet<>();
     divisors.add(1);
@@ -68,31 +68,28 @@ public class Divisors
     divisors.addAll(biggerDivisors);
     return divisors;
     }
-  public Map<Integer, Integer> getPrimeDivisorsUnderSqrt (int number)
+  public Map<Integer, Integer> getPrimeDivisors (int number)
     {
-    return getPrimeDivisorsUnderSqrt (number, true);
-    }
-  private Map<Integer, Integer> getPrimeDivisorsUnderSqrt (int number, boolean underSqrt)
-    {
-    Map<Integer, Integer> primeDivisorsUnderSqrt = new LinkedHashMap<>();
+    Map<Integer, Integer> primeDivisors= new LinkedHashMap<>();
     int primeIndex = 0;
     int result = number;
     while (result != 1)
       {
-      if (underSqrt && primes.get(primeIndex) > (int)Math.sqrt(number))
+      int prime = primes.get(primeIndex);
+      if (prime > (int)Math.sqrt(number))
         {
+        primeDivisors.put(result, 1);
         break;
         }
-      int prime = primes.get(primeIndex);
       if (result % prime == 0)
         {
-        if(primeDivisorsUnderSqrt.containsKey(prime))
+        if(primeDivisors.containsKey(prime))
           {
-          primeDivisorsUnderSqrt.put(prime, primeDivisorsUnderSqrt.get(prime) + 1);
+          primeDivisors.put(prime, primeDivisors.get(prime) + 1);
           }
         else
           {
-          primeDivisorsUnderSqrt.put(prime, 1);
+          primeDivisors.put(prime, 1);
           }
         result /= prime;
         }
@@ -101,10 +98,6 @@ public class Divisors
         primeIndex++;
         }
       }
-    return primeDivisorsUnderSqrt;
-    }
-  public Map<Integer, Integer> getPrimeDivisors (int number)
-    {
-    return getPrimeDivisorsUnderSqrt (number, false);
+    return primeDivisors;
     }
   }
