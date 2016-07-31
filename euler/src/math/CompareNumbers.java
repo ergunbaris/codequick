@@ -18,6 +18,17 @@ public class CompareNumbers
     return Arrays.equals(decimalCountArray,
                          otherDecimalCountArray);
     }
+  public static boolean isPermutation2(int number,
+                                       int otherNumber)
+    {
+    String nStr = Integer.toString(number);
+    String onStr = Integer.toString(otherNumber);
+    int [] decimalCountArray = getDecimalCountArray(nStr);
+    int [] otherDecimalCountArray = getDecimalCountArray(onStr);
+    return Arrays.equals(decimalCountArray,
+                         otherDecimalCountArray);
+    
+    }
   private static int [] getDecimalCountArray (int number)
     {
     int [] decimalCountArray = new int[10];
@@ -27,6 +38,16 @@ public class CompareNumbers
       int remainder = result % 10;
       decimalCountArray[remainder]++;
       result /= 10;
+      }
+    return decimalCountArray;
+    }
+  
+  private static int [] getDecimalCountArray (String number)
+    {
+    int [] decimalCountArray = new int[10];
+    for (char a: number.toCharArray())
+      {
+      decimalCountArray[a - '0']++;
       }
     return decimalCountArray;
     }

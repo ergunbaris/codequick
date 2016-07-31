@@ -34,7 +34,7 @@ public class TotientPermutation
           }
       int phiRes = phi(i,
                        pDivisors);
-      if (CompareNumbers.isPermutation(i, phiRes))
+      if (CompareNumbers.isPermutation2(i, phiRes))
         {
         double ratio = (double) i/ (double)phiRes;
         if (ratio < minRatio)
