@@ -9,28 +9,31 @@ Retrospective: WALK THROUGH YOUR CODE CAREFULLY
 
 public class Eratosthenes
 {
+  private final Integer [] primeNumbers;
+  private final boolean [] nonprimes;
   public static void main (String ... args)
   {
     int n = Integer.parseInt(args[0]);
-    List<Integer> primes =  new Eratosthenes().getListOfPrimesUnder(n);
+    Eratosthenes sieve = new Eratosthenes(n);
+    Integer [] primes =  sieve.getPrimeNumbers();
     for(int prime:primes)
       {
       System.out.printf("%d,",prime);
       }
     System.out.println();
-    //System.out.printf("%d th prime is %d%n", n, new EratosthenesAll().getNthPrimeNumber(n));
+    System.out.printf("1st prime number=%d%n", sieve.getNthPrimeNumber(0));
   }
-  public List<Integer> getListOfPrimesUnder(int n)
+  public Eratosthenes(int n)
     {
     List<Integer> primes = new ArrayList<>();
-    boolean [] nonprimes = new boolean[n+1];
+    nonprimes = new boolean[n+1];
     int prime = 2;
     primes.add(prime);
     int sqrtN = (int)Math.sqrt(n);
     while(prime<=sqrtN)
       {
-      flagNonPrimes(nonprimes, prime);
-      prime = getNextPrime(nonprimes,prime);
+      flagNonPrimes(prime);
+      prime = getNextPrime(prime);
       primes.add(prime);
       }
     for(int i=prime+1;i<n;i++)
@@ -40,32 +43,27 @@ public class Eratosthenes
         primes.add(i);
         }
       }
-    return primes;
+    primeNumbers = primes.toArray(new Integer[0]);
+    }
+  public Integer [] getPrimeNumbers()
+    {
+    return primeNumbers;
     }
   public int getNthPrimeNumber(int n)
   {
-  boolean [] nonprimes = new boolean[n*100];
-  int prime = 2;
-  int count =1;
-  while(prime < n*100 && count !=n )
-    {
-      flagNonPrimes(nonprimes, prime);
-      prime = getNextPrime(nonprimes, prime);
-      count++;
-    }
-  return prime;
+  return primeNumbers[n];
   }
-  public void flagNonPrimes(boolean [] nonprimes, int prime)
+  public void flagNonPrimes(int prime)
     {
     for(int i=prime*prime;i<nonprimes.length;i += prime)
       {
       nonprimes[i] = true;
       }
     }
-  public int getNextPrime(boolean [] nonprimes, int curPrime)
+  public int getNextPrime(int number)
     {
-    int next = curPrime;
-    for(int i=curPrime+1 ;i<nonprimes.length; i++)
+    int next = number;
+    for(int i = number + 1 ; i < nonprimes.length; i++)
      {
        if(!nonprimes[i])
        {
