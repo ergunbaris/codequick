@@ -1,9 +1,13 @@
 package prime;
-import java.util.*;
+import java.util.Set;
+import java.util.Map;
+import java.util.TreeSet;
+import java.util.HashSet;
+import java.util.LinkedHashMap;
 
 public class Divisors
   {
-  private final List<Integer> primes;
+  private final Integer [] primes;
   public static void main(String ... args)
     {
     int number = Integer.parseInt(args[0]);
@@ -17,7 +21,7 @@ public class Divisors
     }
   public Divisors(int maxLimit)
     {
-    primes = new Eratosthenes().getListOfPrimesUnder(maxLimit);
+    primes = new Eratosthenes(maxLimit).getPrimeNumbers();
     }
   public int findSumOfAllDivisors(int number)
     {
@@ -75,7 +79,7 @@ public class Divisors
     int result = number;
     while (result != 1)
       {
-      int prime = primes.get(primeIndex);
+      int prime = primes[primeIndex];
       if (prime > (int)Math.sqrt(number))
         {
         primeDivisors.put(result, 1);

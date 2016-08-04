@@ -1,15 +1,19 @@
 package prime;
+
 import java.util.List;
 import java.util.ArrayList;
+import java.util.Set;
+import java.util.HashSet;
 
 public class PseudoFortunate
   {
   private final int max;
   private final Eratosthenes sieve;
   private final Integer [] primes;
-  private final int biggestPrimeIndex;  
+  private final int biggestPrimeIndex;
+  private final Set<Long> fortunateNumbers = new HashSet<>();
 
-  private long sum = 0;
+  private long sum = 0L;
   public static void main (String ... args)
     {
     int max = Integer.parseInt(args[0]);
@@ -19,15 +23,22 @@ public class PseudoFortunate
   public PseudoFortunate (int max)
     {
     this.max = max;
-    this.sieve = new Eratosthenes(this.max + 2000);
+    this.sieve = new Eratosthenes(this.max + 100);
     this.primes = sieve.getPrimeNumbers();
     this.biggestPrimeIndex = findBiggestConseqPrimeIndex(this.max);
-    findAdmissibleNumbers(1,
-                          0);
+    findDistinctPseudoFortunateNumbers(1,
+                          0);    
     }
-
   private long findSum()
     {
+    if (sum != 0L)
+      {
+      return sum;
+      }
+    for(long found:fortunateNumbers)
+      {
+      sum += found;
+      }
     return sum;
     }
 
@@ -47,10 +58,8 @@ public class PseudoFortunate
     while (true);    
     return index--;
     }
-
-  private void findAdmissibleNumbers(final long number,
-                                     final int primeIndex
-                                    )
+  private void findDistinctPseudoFortunateNumbers(final long number,
+                                                  final int primeIndex)
     {
     if (number > this.max)
       {
@@ -58,8 +67,7 @@ public class PseudoFortunate
       }
     if (number > 1)
       {
-      System.err.println(number);
-      sum += (sieve.getNextPrime((int)number+1) - number);
+      fortunateNumbers.add(findPseudoFortunateNumber(number));
       }
     for (int i = primeIndex; i <= biggestPrimeIndex; i++)
         {
@@ -69,8 +77,12 @@ public class PseudoFortunate
           return;
           }
         long newNumber = number * this.primes[i];
-        findAdmissibleNumbers(newNumber,
-                              i);
+        findDistinctPseudoFortunateNumbers(newNumber,
+                                           i);
         }
+    }
+  private long findPseudoFortunateNumber (final long admissibleNumber)
+    {
+    return sieve.getNextPrime((int)admissibleNumber+1) - admissibleNumber;
     }
   }
