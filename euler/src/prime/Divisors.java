@@ -3,7 +3,7 @@ import java.util.*;
 
 public class Divisors
   {
-  private final List<Integer> primes;
+  private final Integer [] primes;
   public static void main(String ... args)
     {
     int number = Integer.parseInt(args[0]);
@@ -14,10 +14,14 @@ public class Divisors
       System.out.printf("%d,", div);
       }
     System.out.println();
+    Map<Long, Integer> primeDivisors = divisors.getPrimeDivisors(number);
+    System.out.printf("number=%d factor_count=%d%n",
+                      number,
+                      divisors.findTheNumberOfFactors(primeDivisors));
     }
   public Divisors(int maxLimit)
     {
-    primes = new Eratosthenes().getListOfPrimesUnder(maxLimit);
+    primes = new Eratosthenes(maxLimit).getPrimeNumbers();
     }
   public int findSumOfAllDivisors(int number)
     {
@@ -31,14 +35,14 @@ public class Divisors
     }
   public Set<Integer> findAllDivisors(int number)
     {
-    Map<Integer, Integer> primeDivisorsUnderSqrt = getPrimeDivisors(number);
+    Map<Long, Integer> primeDivisorsUnderSqrt = getPrimeDivisors(number);
     int sqrtNumber = (int)Math.sqrt(number);
     Set<Integer> divisors = new TreeSet<>();
     divisors.add(1);
-    for (Map.Entry<Integer, Integer> entry: primeDivisorsUnderSqrt.entrySet())
+    for (Map.Entry<Long, Integer> entry: primeDivisorsUnderSqrt.entrySet())
       {
       Set<Integer> newDivisors = new HashSet<>();
-      int prime = entry.getKey();
+      long prime = entry.getKey();
       int pow = entry.getValue();
       for (int divisor:divisors)
         {
@@ -68,14 +72,14 @@ public class Divisors
     divisors.addAll(biggerDivisors);
     return divisors;
     }
-  public Map<Integer, Integer> getPrimeDivisors (int number)
+  public Map<Long, Integer> getPrimeDivisors (long number)
     {
-    Map<Integer, Integer> primeDivisors= new LinkedHashMap<>();
+    Map<Long, Integer> primeDivisors= new LinkedHashMap<>();
     int primeIndex = 0;
-    int result = number;
+    long result = number;
     while (result != 1)
       {
-      int prime = primes.get(primeIndex);
+      int prime = primes[primeIndex];
       if (prime > (int)Math.sqrt(number))
         {
         primeDivisors.put(result, 1);
@@ -85,11 +89,11 @@ public class Divisors
         {
         if(primeDivisors.containsKey(prime))
           {
-          primeDivisors.put(prime, primeDivisors.get(prime) + 1);
+          primeDivisors.put((long)prime, primeDivisors.get(prime) + 1);
           }
         else
           {
-          primeDivisors.put(prime, 1);
+          primeDivisors.put((long)prime, 1);
           }
         result /= prime;
         }
@@ -99,5 +103,14 @@ public class Divisors
         }
       }
     return primeDivisors;
+    }
+  public int findTheNumberOfFactors(Map<Long, Integer> primeDivisors)
+    {
+    int result = 1;
+    for (int exponent:primeDivisors.values())
+      {
+      result *= (exponent+1);
+      }
+    return result;
     }
   }
