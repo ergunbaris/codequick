@@ -1,5 +1,9 @@
 package prime;
-import java.util.*;
+import java.util.Set;
+import java.util.Map;
+import java.util.TreeSet;
+import java.util.HashSet;
+import java.util.LinkedHashMap;
 
 public class Divisors
   {

@@ -18,12 +18,11 @@ public class Eratosthenes
     Integer [] primes =  sieve.getPrimeNumbers();
     for(int prime:primes)
       {
-      System.out.printf("%d,",prime);
+      System.out.printf("%d%n",prime);
       }
-    System.out.println();
-    System.out.printf("1st prime number=%d%n", sieve.getNthPrimeNumber(0));
+    //System.out.printf("1st prime number=%d%n", sieve.getNthPrimeNumber(0));
   }
-  public Eratosthenes(int n)
+  public Eratosthenes(final int n)
     {
     List<Integer> primes = new ArrayList<>();
     nonprimes = new boolean[n+1];
@@ -49,18 +48,18 @@ public class Eratosthenes
     {
     return primeNumbers;
     }
-  public int getNthPrimeNumber(int n)
+  public int getNthPrimeNumber(final int n)
   {
   return primeNumbers[n];
   }
-  public void flagNonPrimes(int prime)
+  public void flagNonPrimes(final int prime)
     {
     for(int i=prime*prime;i<nonprimes.length;i += prime)
       {
       nonprimes[i] = true;
       }
     }
-  public int getNextPrime(int number)
+  public int getNextPrime(final int number)
     {
     int next = number;
     for(int i = number + 1 ; i < nonprimes.length; i++)
