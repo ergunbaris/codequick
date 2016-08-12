@@ -1,6 +1,7 @@
 package prime;
 import java.util.Set;
 import java.util.Map;
+import java.util.HashMap;
 import java.util.TreeSet;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
@@ -8,10 +9,12 @@ import java.util.LinkedHashMap;
 public class Divisors
   {
   private final Integer [] primes;
+  private final Eratosthenes sieve;
   public static void main(String ... args)
     {
     int number = Integer.parseInt(args[0]);
-    Divisors divisors = new Divisors(number);
+    Eratosthenes sieve = new Eratosthenes(number);
+    Divisors divisors = new Divisors(sieve);
     Set<Long> allDivisors = divisors.findAllDivisors(number);
     for(long div:allDivisors)
       {
@@ -28,10 +31,18 @@ public class Divisors
     System.out.printf("number=%d factor_count=%d%n",
                       number,
                       divisors.findTheNumberOfFactors(primeDivisors));
+    Map<Long, Integer> factorialsPrimeDivisors = divisors.getFactorialsPrimeDivisors(number);
+    for(Map.Entry<Long, Integer> entry: factorialsPrimeDivisors.entrySet())
+      {
+      System.out.printf("primeDiv=%d, exp=%d%n",
+                        entry.getKey(),
+                        entry.getValue());
+      }
     }
-  public Divisors(int maxLimit)
+  public Divisors(Eratosthenes sieve)
     {
-    primes = new Eratosthenes(maxLimit).getPrimeNumbers();
+    this.sieve = sieve;
+    this.primes = this.sieve.getPrimeNumbers();
     }
   public long findSumOfAllDivisors(int number)
     {
@@ -113,6 +124,29 @@ public class Divisors
         }
       }
     return primeDivisors;
+    }
+  public Map<Long, Integer> getFactorialsPrimeDivisors(long number)
+    {
+    Integer [] primes = new Eratosthenes((int)number + 1).getPrimeNumbers();
+    Map<Long, Integer> factorialPrimes = new HashMap<>();
+		for (int prime:primes)
+        {
+        int factorialPrimeExp = 0;
+        for (int i = 1; i <= 32; i++)
+          {
+          long result = number / (long) Math.pow(prime, i);
+          if (result == 0)
+            {
+            break;
+            }
+          factorialPrimeExp += result;
+          }
+        if (factorialPrimeExp > 0)
+          {
+          factorialPrimes.put((long)prime, factorialPrimeExp);
+          }
+        }
+    return factorialPrimes;
     }
   public long findTheNumberOfFactors(Map<Long, Integer> primeDivisors)
     {

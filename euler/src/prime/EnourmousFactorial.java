@@ -10,33 +10,33 @@ public class EnourmousFactorial
 
   private final int p;
   private final int q;
-  private final int mod;
+  private final long N;
+  private final Eratosthenes sieve;
   private final Divisors divisors;
   public static void main (String ... args)
     {
     int p = Integer.parseInt(args[0]);
     int q = Integer.parseInt(args[1]);
-    int mod = Integer.parseInt(args[2]);
-    EnourmousFactorial ef = new EnourmousFactorial(p,q,mod);
+    EnourmousFactorial ef = new EnourmousFactorial(p,q);
     long NF = ef.findNF();    
     System.out.println(NF);
     
     }
   public EnourmousFactorial(int p,
-                            int q,
-                            int mod)
+                            int q)
     {
     this.p = p;
     this.q = q;
-    this.mod = mod;
-    this.divisors = new Divisors(100_000_000);
-    
+    this.N = findN();
+    this.sieve = new Eratosthenes((int)N);
+    this.divisors = new Divisors(this.sieve);
     }
+
   public long findN()
     {
     long result = 0;
     long sn = S0;
-    for (int i = 0; i < this.mod; i++)
+    for (int i = 0; i < this.q; i++)
       {
       result += (sn % p) * (long) Math.pow(this.p, i);
       sn = (sn * sn) % 50515093L;
@@ -47,21 +47,10 @@ public class EnourmousFactorial
    public long findNF()
       {
       long N = findN();
-      Map<Long, Integer> primeDivs = this.divisors.getPrimeDivisors(N);
-      Map<Long, Integer> primeDivsOfFactorial = new HashMap<>();
-      for (Map.Entry<Long,Integer> entry:primeDivs.entrySet())
-        {
-        int factorialPrimeExp = 0;
-        final long prime = entry.getKey();
-        final int primeExp = entry.getValue();
-        for (int i = 1; i <= primeExp; i++)
-          {
-          factorialPrimeExp += N / (long) Math.pow(prime, i);
-          }
-        primeDivsOfFactorial.put(prime, factorialPrimeExp);
-        }
-      displayPrimeMap(primeDivsOfFactorial);
-      return this.divisors.findTheNumberOfFactors(primeDivsOfFactorial);
+      System.out.println(N);
+      Map<Long, Integer> primeDivs = this.divisors.getFactorialsPrimeDivisors(N);
+      displayPrimeMap(primeDivs);
+      return this.divisors.findTheNumberOfFactors(primeDivs);
       }
 
     private void displayPrimeMap(Map<Long, Integer> primeMap)
