@@ -3,6 +3,8 @@ package probability;
 public class Scoring
   {
 
+  private static final double EXCPECTED_RATIO = 0.02;
+
   private final double q;
   private final int points;
   private final int shootCount;
@@ -32,18 +34,20 @@ public class Scoring
   public double findProbabiltyOfScoring()
     {
     probability = 0.0;
-    for (int j = 0; j < this.shootCount - this.points; j++)
+    for (int j = 0; j <= this.shootCount - this.points; j++)
       {
+      System.out.println(j);
       boolean [] probabilities = new boolean[this.shootCount];
-      for (int i = j; i < this.shootCount; i++)
+      calculateProbability(probabilities, 0, j);
+      if (probability > EXCPECTED_RATIO)
         {
-        calculateProbability(probabilities, 0, i);
+        break;
         }
       }
     return probability;
     }
   private double findScoringProbability (double distance)
-    {
+    {   
     return 1.0 - (distance / this.q);
     }
   private double findNotScoringProbability (double distance)
@@ -55,37 +59,45 @@ public class Scoring
                                      int totalPoints,
                                      int index)
     {
+    probabilities[index] = true;
+    totalPoints++;
     if (totalPoints == this.points)
       {
       probability += calculateIncidentProbability(probabilities);
+      System.out.printf("%.10f%n", probability);
       return;
       }
-    probabilities[index] = true;
-    totalPoints++;
     for (int i = index + 1; i < this.shootCount; i++)
       {
       calculateProbability (probabilities,
                             totalPoints,
                             i);
-      totalPoints--;
+      if (probability > EXCPECTED_RATIO)
+        {
+        break;
+        }
+      probabilities[i] = false;
       }
+    probabilities[index] = false;
+
     }
 
   private double calculateIncidentProbability(boolean [] probabilities)
     {
-    double prob = 0.0;
+    double prob = 1.0;
     for (int i = 0; i < this.shootCount; i++)
       {
       int distance = i + 1;
       if (probabilities[i])
         {
-        prob += findScoringProbability(distance);
+        prob *= findScoringProbability(distance);
         }
       else
         {
-        prob += findNotScoringProbability(distance);
+        prob *= findNotScoringProbability(distance);
         }
       }
+    System.err.printf("%5.3f%n", prob);
     return prob;
     }
 
