@@ -1,5 +1,8 @@
 package probability;
 
+import java.util.List;
+import java.util.LinkedList;
+
 public class Scoring
   {
 
@@ -8,7 +11,7 @@ public class Scoring
   private final double q;
   private final int points;
   private final int shootCount;
-  private double probability;
+  private final int [] probFuncCoefficients;
   
   public static void main(String ... args)
     {
@@ -17,8 +20,6 @@ public class Scoring
     int shootCount = Integer.parseInt(args[1]);
     int points = Integer.parseInt(args[2]);
     Scoring prob = new Scoring(q, shootCount, points);
-    double probability = prob.findProbabiltyOfScoring();
-    System.out.printf("%13.10f%n", probability);
     
     }
 
@@ -29,76 +30,99 @@ public class Scoring
     this.q = q;
     this.shootCount = shootCount;
     this.points = points;
+    probFuncCoefficients = new int[this.points+1];
+    findProbabiltyFunctionCoefficients();
+    displayCoefficients();
+    }
+  
+  public void findProbabiltyFunctionCoefficients()
+    {
+    for (int i = this.shootCount; i > 1; i--)
+      {
+      List<Integer> remainingDists = new LinkedList<>();
+      for (int j = i ; j > i - this.shootCount; j--)
+        {        
+        if (i != j)
+          {
+          int dist = j > 0 ? j : this.shootCount + j;
+          remainingDists.add(dist);
+          }
+        }
+      calculateCoeffficients(this.points,
+                             i,
+                             i,
+                             remainingDists);
+      }
+    }
+  
+  private void calculateCoeffficients (int coefficientPow,
+                                       int curDist,
+                                       int curVal,
+                                       List<Integer> remainingDists)
+    {
+    if (coefficientPow < 0)
+      {
+      return;
+      }
+    int sum = 0;
+    for (int distance:remainingDists)
+      {
+      if (coefficientPow == this.points)
+        {
+        if (curDist > distance)
+          {
+          sum += distance;
+          }
+        }
+        else
+        {
+        sum += distance;
+        }
+      }
+    displayRemainingDists(remainingDists);
+    System.out.printf("pow=%d sum=%d curVal=%d curDist=%d%n", 
+                      coefficientPow,
+                      sum,
+                      curVal,
+                      curDist);
+    System.out.println();
+    probFuncCoefficients[coefficientPow] += curVal * sum;
+    coefficientPow--;
+    for (int i = 0; i < remainingDists.size(); i++)
+      {      
+      int nextDistance = remainingDists.remove(i);
+      int nextVal = curVal * nextDistance;
+      calculateCoeffficients(coefficientPow,
+                             nextDistance,
+                             nextVal,
+                             remainingDists);
+      remainingDists.add(i, nextDistance);      
+      }
+    
+    }
+
+  private void displayRemainingDists(List<Integer> remainingDists)
+    {
+    for (int dist:remainingDists)
+      {
+      System.out.printf("%d,", dist);
+      }
+    System.out.println();
+    }
+
+  private void displayCoefficients()
+    {
+    for (int i = probFuncCoefficients.length-1; i >=0; i--)
+      {
+      System.out.printf("%d * q^%d +", 
+                        probFuncCoefficients[i],
+                        i);
+      }
+    System.out.println();
     }
 
   public double findProbabiltyOfScoring()
     {
-    probability = 0.0;
-    for (int j = 0; j <= this.shootCount - this.points; j++)
-      {
-      System.out.println(j);
-      boolean [] probabilities = new boolean[this.shootCount];
-      calculateProbability(probabilities, 0, j);
-      if (probability > EXCPECTED_RATIO)
-        {
-        break;
-        }
-      }
-    return probability;
+    return 0.0;
     }
-  private double findScoringProbability (double distance)
-    {   
-    return 1.0 - (distance / this.q);
-    }
-  private double findNotScoringProbability (double distance)
-    {
-    return 1.0 - findScoringProbability(distance);
-    }
-
-  private void calculateProbability (boolean [] probabilities,
-                                     int totalPoints,
-                                     int index)
-    {
-    probabilities[index] = true;
-    totalPoints++;
-    if (totalPoints == this.points)
-      {
-      probability += calculateIncidentProbability(probabilities);
-      System.out.printf("%.10f%n", probability);
-      return;
-      }
-    for (int i = index + 1; i < this.shootCount; i++)
-      {
-      calculateProbability (probabilities,
-                            totalPoints,
-                            i);
-      if (probability > EXCPECTED_RATIO)
-        {
-        break;
-        }
-      probabilities[i] = false;
-      }
-    probabilities[index] = false;
-
-    }
-
-  private double calculateIncidentProbability(boolean [] probabilities)
-    {
-    double prob = 1.0;
-    for (int i = 0; i < this.shootCount; i++)
-      {
-      int distance = i + 1;
-      if (probabilities[i])
-        {
-        prob *= findScoringProbability(distance);
-        }
-      else
-        {
-        prob *= findNotScoringProbability(distance);
-        }
-      }
-    System.err.printf("%5.3f%n", prob);
-    return prob;
-    }
-
   }
