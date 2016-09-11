@@ -1,7 +1,7 @@
 package probability;
 
-import java.util.List;
-import java.util.LinkedList;
+import java.util.Set;
+import java.util.LinkedHashSet;
 
 public class Scoring
   {
@@ -39,45 +39,60 @@ public class Scoring
     {
     for (int i = this.shootCount; i > 1; i--)
       {
-      List<Integer> remainingDists = new LinkedList<>();
-      for (int j = i ; j > i - this.shootCount; j--)
-        {        
-        if (i != j)
+      Set<Integer> remainingDists = new LinkedHashSet<>();
+      Set<Integer> usedDists = new LinkedHashSet<>();
+      Set<Integer> remForAddDists = new LinkedHashSet<>();
+      for (int j = this.shootCount ; j > 0; j--)
+        {
+        if (j > i)
           {
-          int dist = j > 0 ? j : this.shootCount + j;
-          remainingDists.add(dist);
+          remForAddDists.add(j);
+          }
+        else if (i != j)
+          {
+          remainingDists.add(j);
           }
         }
+      usedDists.add(i);
       calculateCoeffficients(this.points,
                              i,
                              i,
-                             remainingDists);
+                             remainingDists,
+                             usedDists,
+                             remForAddDists);
       }
     }
   
   private void calculateCoeffficients (int coefficientPow,
                                        int curDist,
                                        int curVal,
-                                       List<Integer> remainingDists)
+                                       Set<Integer> remainingDists,
+                                       Set<Integer> usedDists,
+                                       Set<Integer> remForAddDists)
     {
     if (coefficientPow < 0)
       {
       return;
       }
-    int sum = 0;
-    for (int distance:remainingDists)
-      {
-      if (coefficientPow == this.points)
+    if (coefficientPow != this.points &&
+        curDist < this.shootCount)
         {
-        if (curDist > distance)
+        for (int i = this.shootCount; i > curDist; i--)
           {
-          sum += distance;
+          if (!usedDists.contains(i))
+            {
+            remainingDists.add(i);
+            }
           }
         }
-        else
-        {
-        sum += distance;
-        }
+    int sum = 0;
+    for (int distance:remainingDists)
+      {         
+      sum += distance;
+      }
+    for (int distance:remForAddDists)
+      {         
+      sum += distance;
       }
     displayRemainingDists(remainingDists);
     System.out.printf("pow=%d sum=%d curVal=%d curDist=%d%n", 
@@ -88,20 +103,28 @@ public class Scoring
     System.out.println();
     probFuncCoefficients[coefficientPow] += curVal * sum;
     coefficientPow--;
-    for (int i = 0; i < remainingDists.size(); i++)
-      {      
-      int nextDistance = remainingDists.remove(i);
-      int nextVal = curVal * nextDistance;
+    for (int i = 1; i <= this.shootCount; i++)
+      {
+      if (!remainingDists.contains(i))
+        {
+        continue;
+        }
+      remainingDists.remove(i);
+      usedDists.add(i);
+      int nextVal = curVal * i;
       calculateCoeffficients(coefficientPow,
-                             nextDistance,
+                             i,
                              nextVal,
-                             remainingDists);
-      remainingDists.add(i, nextDistance);      
+                             remainingDists,
+                             usedDists,
+                             remForAddDists);
+      remainingDists.add(i);
+      usedDists.remove(i);
       }
     
     }
 
-  private void displayRemainingDists(List<Integer> remainingDists)
+  private void displayRemainingDists(Set<Integer> remainingDists)
     {
     for (int dist:remainingDists)
       {
