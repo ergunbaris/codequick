@@ -39,98 +39,70 @@ public class Scoring
     {
     for (int i = this.shootCount; i > 1; i--)
       {
-      Set<Integer> remainingDists = new LinkedHashSet<>();
       Set<Integer> usedDists = new LinkedHashSet<>();
-      Set<Integer> remForAddDists = new LinkedHashSet<>();
-      for (int j = this.shootCount ; j > 0; j--)
-        {
-        if (j > i)
-          {
-          remForAddDists.add(j);
-          }
-        else if (i != j)
-          {
-          remainingDists.add(j);
-          }
-        }
       usedDists.add(i);
       calculateCoeffficients(this.points,
                              i,
-                             i,
-                             remainingDists,
-                             usedDists,
-                             remForAddDists);
+                             usedDists);
       }
     }
   
   private void calculateCoeffficients (int coefficientPow,
                                        int curDist,
-                                       int curVal,
-                                       Set<Integer> remainingDists,
-                                       Set<Integer> usedDists,
-                                       Set<Integer> remForAddDists)
+                                       Set<Integer> usedDists)
     {
     if (coefficientPow < 0)
       {
       return;
       }
-    if (coefficientPow != this.points &&
-        curDist < this.shootCount)
-        {
-        for (int i = this.shootCount; i > curDist; i--)
-          {
-          if (!usedDists.contains(i))
-            {
-            remainingDists.add(i);
-            }
-          }
-        }
-    int sum = 0;
-    for (int distance:remainingDists)
-      {         
-      sum += distance;
-      }
-    for (int distance:remForAddDists)
-      {         
-      sum += distance;
-      }
-    displayRemainingDists(remainingDists);
-    System.out.printf("pow=%d sum=%d curVal=%d curDist=%d%n", 
+    System.out.printf("pow=%d curDist=%d", 
                       coefficientPow,
-                      sum,
-                      curVal,
                       curDist);
-    System.out.println();
-    probFuncCoefficients[coefficientPow] += curVal * sum;
-    coefficientPow--;
+    System.out.printf(" multiples=(");
+    int multiples = 1;
+    for (int multiple:usedDists)
+      {
+      System.out.printf("%d,",multiple);
+      multiples *= multiple;
+      }
+    System.out.printf(") sums=(");
+    int sum = 0;
     for (int i = 1; i <= this.shootCount; i++)
       {
-      if (!remainingDists.contains(i))
+      if (coefficientPow == this.points &&
+          i > curDist)
         {
         continue;
         }
-      remainingDists.remove(i);
+      if (usedDists.contains(i))
+        {
+        continue;
+        }
+      System.out.printf("%d,",i);
+      sum += i;
+      }
+    System.out.printf(")%n");
+    System.out.println();
+    probFuncCoefficients[coefficientPow] +=  multiples * sum;
+    coefficientPow--;
+    for (int i = 1; i <= this.shootCount; i++)
+      {
+      if (usedDists.contains(i))
+        {
+        continue;
+        }
+      if (coefficientPow == this.points - 1 &&
+          i > curDist)
+        {
+        continue;
+        }
       usedDists.add(i);
-      int nextVal = curVal * i;
       calculateCoeffficients(coefficientPow,
                              i,
-                             nextVal,
-                             remainingDists,
-                             usedDists,
-                             remForAddDists);
-      remainingDists.add(i);
+                             usedDists);
       usedDists.remove(i);
       }
     
-    }
-
-  private void displayRemainingDists(Set<Integer> remainingDists)
-    {
-    for (int dist:remainingDists)
-      {
-      System.out.printf("%d,", dist);
-      }
-    System.out.println();
     }
 
   private void displayCoefficients()
