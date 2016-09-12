@@ -11,7 +11,7 @@ public class Scoring
   private final double q;
   private final int points;
   private final int shootCount;
-  private final int [] probFuncCoefficients;
+  private final long [] probFuncCoefficients;
   
   public static void main(String ... args)
     {
@@ -30,8 +30,9 @@ public class Scoring
     this.q = q;
     this.shootCount = shootCount;
     this.points = points;
-    probFuncCoefficients = new int[this.points+1];
+    probFuncCoefficients = new long[this.points+1];
     findProbabiltyFunctionCoefficients();
+    processCoefficients();
     displayCoefficients();
     }
   
@@ -103,6 +104,24 @@ public class Scoring
       usedDists.remove(i);
       }
     
+    }
+
+  private void processCoefficients()
+    {
+    for (int i = probFuncCoefficients.length-1; i >=0; i--)
+      {
+      probFuncCoefficients[i] = probFuncCoefficients[i] / findFactorial(this.points - i);
+      }
+    }
+
+  private long findFactorial(int number)
+    {
+    long factorial = 1;
+    for (int i = 1; i <= number; i++)
+      {
+      factorial *= i;
+      }
+    return factorial;
     }
 
   private void displayCoefficients()
