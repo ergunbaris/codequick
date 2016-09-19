@@ -6,137 +6,79 @@ import java.util.LinkedHashSet;
 public class Scoring
   {
 
-  private static final double EXCPECTED_RATIO = 0.02;
+  private static final double EXPECTED_RATIO = 0.02;
 
-  private final double q;
   private final int points;
   private final int shootCount;
-  private final long [] probFuncCoefficients;
   
   public static void main(String ... args)
     {
     
-    double q = Double.parseDouble(args[0]);
-    int shootCount = Integer.parseInt(args[1]);
-    int points = Integer.parseInt(args[2]);
-    Scoring prob = new Scoring(q, shootCount, points);
-    
+    int shootCount = Integer.parseInt(args[0]);
+    int points = Integer.parseInt(args[1]);
+    Scoring prob = new Scoring(shootCount, points);
+    //double q = 52.6494571953;
+    //System.out.println(prob.findProbabiltyOfScoring(q));
+    System.out.printf("%12.10f%n",prob.findQ());
     }
 
-  public Scoring (double q,
-                  int shootCount,
+  public double findQ()
+    {
+    double high = 100.0;
+    double low = 50.0;
+    double mid = (high + low)/2;
+    double res;
+    while((res = findProbabiltyOfScoring(mid)) != EXPECTED_RATIO)
+      {
+      if (res > EXPECTED_RATIO)
+        {
+        if (mid - low < 0.0000000001)
+          {
+          break;
+          }
+        low = mid;        
+        }
+      else
+        {
+        if (high - mid < 0.0000000001)
+          {
+          break;
+          }
+        high = mid;
+        }
+      mid = (high + low)/2;
+      }
+    return mid;
+    }
+
+  public Scoring (int shootCount,
                   int points)
     {
-    this.q = q;
     this.shootCount = shootCount;
     this.points = points;
-    probFuncCoefficients = new long[this.points+1];
-    findProbabiltyFunctionCoefficients();
-    processCoefficients();
-    displayCoefficients();
-    }
+    }  
   
-  public void findProbabiltyFunctionCoefficients()
-    {
-    for (int i = this.shootCount; i > 1; i--)
-      {
-      Set<Integer> usedDists = new LinkedHashSet<>();
-      usedDists.add(i);
-      calculateCoeffficients(this.points,
-                             i,
-                             usedDists);
-      }
-    }
-  
-  private void calculateCoeffficients (int coefficientPow,
-                                       int curDist,
-                                       Set<Integer> usedDists)
-    {
-    if (coefficientPow < 0)
-      {
-      return;
-      }
-    System.out.printf("pow=%d curDist=%d", 
-                      coefficientPow,
-                      curDist);
-    System.out.printf(" multiples=(");
-    int multiples = 1;
-    for (int multiple:usedDists)
-      {
-      System.out.printf("%d,",multiple);
-      multiples *= multiple;
-      }
-    System.out.printf(") sums=(");
-    int sum = 0;
-    for (int i = 1; i <= this.shootCount; i++)
-      {
-      if (coefficientPow == this.points &&
-          i > curDist)
-        {
-        continue;
-        }
-      if (usedDists.contains(i))
-        {
-        continue;
-        }
-      System.out.printf("%d,",i);
-      sum += i;
-      }
-    System.out.printf(")%n");
-    System.out.println();
-    probFuncCoefficients[coefficientPow] +=  multiples * sum;
-    coefficientPow--;
-    for (int i = 1; i <= this.shootCount; i++)
-      {
-      if (usedDists.contains(i))
-        {
-        continue;
-        }
-      if (coefficientPow == this.points - 1 &&
-          i > curDist)
-        {
-        continue;
-        }
-      usedDists.add(i);
-      calculateCoeffficients(coefficientPow,
-                             i,
-                             usedDists);
-      usedDists.remove(i);
-      }
-    
-    }
 
-  private void processCoefficients()
+  public double findProbabiltyOfScoring(double q)
     {
-    for (int i = probFuncCoefficients.length-1; i >=0; i--)
+    double [][] probTable = new double[this.shootCount+1][this.shootCount+1];
+    probTable[0][0] = 1;
+    Outer:for (int i = 1; i <= this.shootCount; i++)
       {
-      probFuncCoefficients[i] = probFuncCoefficients[i] / findFactorial(this.points - i);
+      for (int j = 0; j <= i; j++)
+        {       
+        probTable[i][j] = probTable[i-1][j] * ((double)i/q);
+        if (j > 0)
+          {
+          probTable[i][j] += probTable[i-1][j-1] * (1- ((double)i/q));
+          }
+        if (i == this.shootCount && 
+            j == this.points)
+          {
+          break Outer;
+          }
+        }
       }
-    }
-
-  private long findFactorial(int number)
-    {
-    long factorial = 1;
-    for (int i = 1; i <= number; i++)
-      {
-      factorial *= i;
-      }
-    return factorial;
-    }
-
-  private void displayCoefficients()
-    {
-    for (int i = probFuncCoefficients.length-1; i >=0; i--)
-      {
-      System.out.printf("%d * q^%d +", 
-                        probFuncCoefficients[i],
-                        i);
-      }
-    System.out.println();
-    }
-
-  public double findProbabiltyOfScoring()
-    {
-    return 0.0;
+    return probTable[this.shootCount][this.points];
     }
   }
