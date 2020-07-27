@@ -19,3 +19,4 @@ RemoteSystemsTempFiles/
 .project
 .settings/
 test-output/
+.idea/
