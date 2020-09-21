@@ -12,21 +12,21 @@ object ProperFractions {
   def proper_fractions(n: Long): Long = {
     if (n == 1) 0
     else if (n == 2) 1
+    else if (BigInt(n).isProbablePrime(100)) n - 1
+    else if(math.sqrt(n).isValidInt) n - math.sqrt(n).toLong
     else {
       val primes = getPrimes(n)
-      val primeFactors = primes.scanLeft((List.empty[(Long, Int)], n)) { case ((acc, div), prime) =>
-        val times =
-          LazyList.continually(prime).scanLeft((div, 1)) { case ((d, cnt), y) => if (d % y == 0) (d / y, cnt + 1) else (d, cnt) }.takeWhile(_._1 % prime == 0)
-            .lastOption.map(_._2).getOrElse(0)
-        if (times == 0) (acc, div)
-        else ((prime, times) :: acc, div / (prime * times))
-      }.last._1.map(_._1)
-        .toSet[Long].flatMap(x => Set(x, n / x)) ++ (if(BigInt(n).isProbablePrime(100)) Set(n) else Set.empty[Long])
-
-      n - primeFactors.foldLeft(0L) { case (acc, x) => acc + n / x } +
-        (2 to primeFactors.size).flatMap(members =>
-          primeFactors.toSeq.combinations(members).map(_.reduce(_ * _))).toSet
-          .foldLeft(0L) { case (acc, x) => acc + n / x }
+      val primeFactors = primes.filter(n % _ == 0)
+        .flatMap(prime => LazyList.from(1).scanLeft(n) { case (div, _) => div / prime }.takeWhile(_ % prime == 0).map(_ => prime))
+      val multipy = n / primeFactors.reduce(_ * _)
+      val primeFactors2 = if (multipy == 1) primeFactors else multipy #:: primeFactors
+      n - primeFactors.toSet.foldLeft(0L) { case (acc, x) =>
+        val times = n / x
+        if (times == x) times + acc
+        else acc + times + x
+      } + (2 to primeFactors2.size).flatMap(members =>
+        primeFactors2.combinations(members).map(_.reduce(_ * _))).toSet
+        .foldLeft(0L) { case (acc, x) => acc + n / x }
     }
 
   }
